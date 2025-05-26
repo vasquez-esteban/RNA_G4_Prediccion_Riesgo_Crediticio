@@ -85,6 +85,8 @@ RNA_G4_Prediccion_Riesgo_Crediticio/
 
 ## Requisitos
 
+0. Colocar el [loan.csv](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data) en /files/input
+
 1. Clonar el repositorio:
    ```bash
    git clone https://github.com/vasquez-esteban/RNA_G4_Prediccion_Riesgo_Crediticio
