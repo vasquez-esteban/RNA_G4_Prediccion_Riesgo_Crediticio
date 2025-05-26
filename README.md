@@ -56,6 +56,7 @@ Este proyecto hace parte del curso _Redes Neuronales y Algoritmos Bioinspirados_
 
 ## Estructura
 
+```
 RNA_G4_Prediccion_Riesgo_Crediticio/
 ├── requirements.txt # ✅ Requisitos de Python para todo el proyecto (Debe actualizarse)
 ├── README.md # 📘 Instrucciones del proyecto
@@ -80,6 +81,7 @@ RNA_G4_Prediccion_Riesgo_Crediticio/
 │
 └── video/ # 🎥 Video promocional
 └── video_promocional.mp4
+```
 
 ## Requisitos
 
