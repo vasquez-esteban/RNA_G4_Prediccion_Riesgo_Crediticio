@@ -101,7 +101,7 @@ Para el reporte técnico en R se necesita:
   MacOS y Linux
 - 1.1. Abre el archivo `/reporte/reporte_blog.Rmd` en RStudio
 
-  1.2. Instala las dependencias necesarias ejecutando los primeros bloques de código manualmente desde RStudio:
+- 1.2. Instala las dependencias necesarias ejecutando los primeros bloques de código manualmente desde RStudio:
 
   ```R
   # Este código se encuentra en los primeros bloques del archivo Rmd
@@ -109,7 +109,7 @@ Para el reporte técnico en R se necesita:
   # Más dependencias según sea necesario
   ```
 
-  1.3. Generar el archivo con RPUBS.
+- 1.3. Generar el archivo con RPUBS.
 
 ### Para Desarrollo en Python (EDA, Modelo de redes y Streamlit)
 
