@@ -50,7 +50,7 @@ docs/
 po/*~
 
 # RStudio Connect folder
-src/rsconnect/
+reporte/rsconnect/
 
 # HTML output files
 *.html

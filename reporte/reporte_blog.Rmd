@@ -11,31 +11,481 @@ output:
     toc: false
 ---
 
-<!-- Portada del Trabajo -->
 
 ::: {style="text-align: center; color: black; margin-top: 60px;"}
-<h1>TRABAJO 1: OPTIMIZACIÓN HEURÍSTICA</h1>
-
+<h1>TRABAJO 2: APLICACIÓN DE REDES NEURONALES A DATOS TABULARES</h1>
 <h2>REDES NEURONALES Y ALGORITMOS BIOINSPIRADOS</h2>
-
 <br><br><br>
-
 <p><strong>Presentado por:</strong></p>
-
 <p>Marcos David Carrillo Builes<br> Tomás Escobar Rivera<br> Jose Fernando López Ramírez <br> Esteban Vásquez Pérez</p>
-
 <br><br>
-
 <p><strong>Profesor:</strong> Juan David Ospina Arango</p>
-
 <p><strong>Monitor:</strong> Andrés Mauricio Zapata Rincón</p>
-
 <br> <img src="logo_unal.png" alt="University Logo" width="100px"/> <br><br>
-
 <p>Universidad Nacional de Colombia<br> Facultad de Minas<br> Ingeniería de Sistemas e Informática</p>
-
 <p><strong>`r format(Sys.Date(), "%d de %B de %Y")`</strong></p>
 :::
 
 ```{r setup, include=FALSE}
+# ----------------------------------------
+# Setup mínimo para tablas con kableExtra
+# ----------------------------------------
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  knitr,       # Generación de tablas base
+  kableExtra,  # Estilización de tablas
+  magrittr     # Pipe %>%
+)
+
+# Configuración global de chunks
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+# ----------------------------------------
 ```
+
+<div style="page-break-after: always;"></div>
+
+# Tabla de Contenidos {-}
+
+- [Resumen](#resumen)
+- [1. Introducción](#introducción)
+  - [1.1 Planteamiento del problema](#planteamiento-del-problema)
+  - [1.2 Objetivos](#objetivos)
+  - [1.3 Metodología](#metodología)
+- [2. Marco Teórico](#marco-teórico)
+  - [2.1 Redes neuronales artificiales](#redes-neuronales-artificiales)
+  - [2.2 Scorecards de riesgo crediticio](#scorecards-de-riesgo-crediticio)
+  - [2.3 Métricas de evaluación](#métricas-de-evaluación)
+- [3. Análisis Descriptivo de los Datos](#análisis-descriptivo-de-los-datos)
+  - [3.1 Descripción del dataset](#descripción-del-dataset)
+  - [3.2 Análisis exploratorio](#análisis-exploratorio)
+  - [3.3 Hipótesis generadas](#hipótesis-generadas)
+- [4. Desarrollo del Modelo](#desarrollo-del-modelo)
+  - [4.1 Preprocesamiento de datos](#preprocesamiento-de-datos)
+  - [4.2 Modelo de referencia (baja complejidad)](#modelo-de-referencia-baja-complejidad)
+  - [4.3 Arquitectura de la red neuronal](#arquitectura-de-la-red-neuronal)
+  - [4.4 Optimización del modelo](#optimización-del-modelo)
+- [5. Evaluación y Validación](#evaluación-y-validación)
+  - [5.1 Métricas de desempeño](#métricas-de-desempeño)
+  - [5.2 Comparación entre modelos](#comparación-entre-modelos)
+  - [5.3 Validación cruzada](#validación-cruzada)
+- [6. Scorecard del Modelo](#scorecard-del-modelo)
+  - [6.1 Construcción del scorecard](#construcción-del-scorecard)
+  - [6.2 Interpretación de puntajes](#interpretación-de-puntajes)
+- [7. Análisis de Variables de Riesgo](#análisis-de-variables-de-riesgo)
+  - [7.1 Importancia de las variables](#importancia-de-las-variables)
+  - [7.2 Perfiles de riesgo](#perfiles-de-riesgo)
+  - [7.3 Factores críticos](#factores-críticos)
+- [8. Aplicación Web](#aplicación-web)
+  - [8.1 Diseño de la aplicación](#diseño-de-la-aplicación)
+  - [8.2 Funcionalidades](#funcionalidades)
+  - [8.3 Implementación](#implementación)
+- [9. Caso de Uso](#caso-de-uso)
+  - [9.1 Escenario de aplicación](#escenario-de-aplicación)
+  - [9.2 Beneficios del modelo](#beneficios-del-modelo)
+- [10. Aprendizajes y Conclusiones](#aprendizajes-y-conclusiones)
+  - [10.1 Aprendizajes del proceso](#aprendizajes-del-proceso)
+  - [10.2 Limitaciones](#limitaciones)
+  - [10.3 Trabajo futuro](#trabajo-futuro)
+- [Referencias](#referencias)
+- [Anexos](#anexos)
+
+<div style="page-break-after: always;"></div>
+
+# Resumen
+
+Este trabajo presenta el desarrollo de un modelo de riesgo crediticio basado en redes neuronales artificiales utilizando un conjunto de datos públicos. El objetivo es predecir la probabilidad de incumplimiento de pago de los clientes de una entidad financiera, utilizando variables relacionadas con su comportamiento financiero y características personales.
+
+El proyecto sigue un enfoque integral: desde la limpieza y exploración de datos hasta el desarrollo, evaluación e interpretación del modelo. Como parte clave del entregable, se construyó un scorecard interpretable que resume el riesgo de cada cliente en una escala comprensible. Además, se implementó una aplicación web para evaluar casos individuales de riesgo crediticio en tiempo real. Los resultados muestran que el modelo propuesto supera a modelos de referencia en métricas clave de clasificación, como AUC-ROC y precisión, lo que evidencia su potencial utilidad en entornos reales.
+
+# 1. Introducción
+
+## 1.1 Planteamiento del problema
+
+Para las entidades financieras, comprender el comportamiento de sus clientes es esencial para una gestión eficaz del riesgo. En particular, conocer el comportamiento crediticio y la probabilidad de incumplimiento es una de las principales preocupaciones del sector. En este trabajo, analizaremos un conjunto de datos relacionados con el incumplimiento financiero, desarrollaremos y entrenaremos un modelo predictivo, y construiremos un scorecard interpretable que será desplegado en un sitio web. Además, detallaremos el proceso completo seguido para alcanzar el modelo final, desde la exploración de los datos hasta su implementación.
+
+## 1.2 Objetivos
+
+### 1.2.1 Objetivo General
+
+Crear y validar un modelo de probabilidad de incumplimiento basado en redes neuronales
+
+### 1.2.2 Objetivos Específicos
+
+- Desarrollar y optimizar la arquitectura de una red neuronal para predicción de incumplimiento
+- Representar el modelo mediante una scorecard interpretable
+- Identificar las variables que incrementan el riesgo de incumplimiento
+- Crear una aplicación web para evaluación personalizada de riesgo
+
+## 1.3 Metodología
+
+Para este proyecto se utilizará un conjunto de datos público disponible en Kaggle: [Click derecho para abrir en nueva pestaña](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset). Este dataset contiene información sobre el historial crediticio de clientes de una institución financiera, con el objetivo de predecir de manera anticipada qué usuarios podrían incumplir sus obligaciones de pago. Esto permite a las entidades financieras tomar decisiones proactivas en su gestión del riesgo.
+
+El proceso de desarrollo del modelo se estructura en varias fases: primero, se realiza una limpieza y exploración detallada de los datos; luego, se diseña y entrena una red neuronal artificial que estima la probabilidad de incumplimiento crediticio a partir de variables sociodemográficas y financieras.
+
+Sobre la base de este modelo, se construirá un scorecard crediticio: una herramienta interpretable que traduce la probabilidad de incumplimiento en una escala numérica comprensible, lo que facilita su uso por parte de analistas y sistemas automatizados de decisión. Esta escala permite clasificar a los clientes según su nivel de riesgo, de manera similar a los sistemas de puntaje crediticio utilizados en la industria (por ejemplo, entre 300 y 850 puntos).
+
+
+# 2. Marco Teórico
+
+## 2.1 Redes neuronales artificiales
+
+Las redes neuronales artificiales (RNA) son modelos computacionales inspirados en la estructura del cerebro humano. Se componen de capas de neuronas interconectadas que transforman entradas en salidas a través de funciones de activación. En problemas de clasificación binaria como el riesgo de crédito, las RNA permiten modelar relaciones no lineales entre variables, lo que puede mejorar la capacidad predictiva frente a modelos lineales tradicionales. Entre sus ventajas destacan su capacidad de generalización y su adaptabilidad a grandes volúmenes de datos. No obstante, suelen ser menos interpretables que los modelos estadísticos clásicos, lo que hace útil complementarlas con herramientas como SHAP o scorecards.
+
+## 2.2 Scorecards de riesgo crediticio
+
+Un scorecard es una herramienta que convierte las salidas de un modelo predictivo (como la probabilidad de incumplimiento) en un puntaje interpretable, generalmente en una escala de 300 a 850. Estos puntajes se utilizan para categorizar clientes según su nivel de riesgo. Su utilidad radica en su simplicidad para la toma de decisiones automatizadas o manuales. La construcción del scorecard suele implicar una transformación logística de la probabilidad estimada y su calibración a una escala entendible por usuarios no técnicos.
+
+## 2.3 Métricas de evaluación
+
+Las métricas comunes para evaluar modelos de riesgo crediticio incluyen:
+
+- **Accuracy:** proporción de predicciones correctas.
+
+- **Recall / Sensitivity:** proporción de incumplidores correctamente identificados.
+
+- **Precision:** proporción de predicciones positivas que fueron correctas.
+
+- **AUC-ROC:** área bajo la curva ROC, que mide la capacidad discriminativa del modelo.
+
+- **Matriz de confusión:** para analizar los errores tipo I (falsos positivos) y tipo II (falsos negativos).
+
+# 3. Análisis Descriptivo de los Datos
+
+**El procedimiento completo se puede consultar en el repositorio de Github en nuestras [Referencias](#referencias)**
+
+## 3.1 Descripción del dataset
+
+El dataset utilizado para este estudio contiene información detallada sobre préstamos y el historial crediticio de los solicitantes. Los datos incluyen variables financieras, demográficas y de comportamiento crediticio que permiten evaluar el riesgo de incumplimiento de los prestatarios.
+
+### 3.1.1 Fuente de datos
+
+Los datos provienen de registros de préstamos que incluyen tanto información proporcionada por los solicitantes como datos obtenidos de bureaus de crédito y registros públicos.
+
+### 3.1.2 Variables del dataset
+
+El dataset está compuesto por **X observaciones** y **Y variables**, las cuales se pueden clasificar en las siguientes categorías:
+
+#### Variables de identificación y estructura del préstamo
+- **policy_code**: Código de política pública (1 = disponible públicamente, 2 = productos nuevos no disponibles públicamente)
+- **purpose**: Categoría proporcionada por el prestatario para la solicitud del préstamo
+- **sub_grade**: Calificación de sub-grado asignada por LC al préstamo
+- **term**: Número de pagos del préstamo (36 o 60 meses)
+- **title**: Título del préstamo proporcionado por el prestatario
+- **url**: URL de la página de LC con los datos del listado
+- **zip_code**: Primeros 3 dígitos del código postal proporcionado por el prestatario
+
+#### Variables de estado y gestión del préstamo
+- **next_pymnt_d**: Fecha del próximo pago programado
+- **pymnt_plan**: Indica si se ha establecido un plan de pagos para el préstamo
+- **verified_status_joint**: Indica si los ingresos conjuntos de los co-prestatarios fueron verificados por LC
+
+#### Variables de balance y pagos
+- **out_prncp**: Capital restante pendiente del monto total financiado
+- **out_prncp_inv**: Capital restante pendiente de la porción financiada por inversionistas
+- **total_pymnt**: Pagos recibidos hasta la fecha del monto total financiado
+- **total_pymnt_inv**: Pagos recibidos hasta la fecha de la porción financiada por inversionistas
+- **total_rec_int**: Intereses recibidos hasta la fecha
+- **total_rec_late_fee**: Comisiones por pagos tardíos recibidas hasta la fecha
+- **total_rec_prncp**: Capital recibido hasta la fecha
+- **recoveries**: Recuperaciones post castigo bruto
+
+#### Variables de historial crediticio general
+- **open_acc**: Número de líneas de crédito abiertas en el archivo crediticio del prestatario
+- **total_acc**: Número total de líneas de crédito actualmente en el archivo crediticio del prestatario
+- **pub_rec**: Número de registros públicos derogatorios
+- **mths_since_last_record**: Número de meses desde el último registro público
+- **acc_now_delinq**: Número de cuentas en las que el prestatario está actualmente en mora
+- **tot_coll_amt**: Montos totales de cobranza adeudados alguna vez
+- **tot_cur_bal**: Balance actual total de todas las cuentas
+
+#### Variables de crédito revolving
+- **revol_bal**: Balance total de crédito revolving
+- **revol_util**: Tasa de utilización de línea revolving (porcentaje de crédito utilizado respecto al disponible)
+- **total_rev_hi_lim**: Límite alto total de crédito revolving/límite de crédito
+- **max_bal_bc**: Balance máximo actual adeudado en todas las cuentas revolving
+- **open_rv_12m**: Número de operaciones revolving abiertas en los últimos 12 meses
+- **open_rv_24m**: Número de operaciones revolving abiertas en los últimos 24 meses
+
+#### Variables de crédito de cuotas (installment)
+- **open_il_6m**: Número de operaciones de cuotas actualmente activas
+- **open_il_12m**: Número de cuentas de cuotas abiertas en los últimos 12 meses
+- **open_il_24m**: Número de cuentas de cuotas abiertas en los últimos 24 meses
+- **mths_since_rcnt_il**: Meses desde que se abrieron las cuentas de cuotas más recientes
+- **total_bal_il**: Balance actual total de todas las cuentas de cuotas
+- **il_util**: Relación del balance actual total al crédito alto/límite de crédito en todas las cuentas de cuotas
+
+#### Variables de consultas e historial reciente
+- **open_acc_6m**: Número de operaciones abiertas en los últimos 6 meses
+- **inq_fi**: Número de consultas de finanzas personales
+- **inq_last_12m**: Número de consultas de crédito en los últimos 12 meses
+- **total_cu_tl**: Número de operaciones financieras
+
+#### Variables de utilización general
+- **all_util**: Balance respecto al límite de crédito en todas las operaciones
+
+
+## 3.2 Análisis exploratorio
+
+Se realizó una exploración visual y estadística del dataset. Entre los hallazgos clave:
+
+- La variable `loan_amnt` muestra una **distribución multimodal**, con picos en $5,000, $10,000 y $15,000. Además, se observa un límite superior abrupto en $35,000, lo cual probablemente responde a políticas internas de aprobación de montos.
+
+```{r fig2-loan-amount, out.width="70%", fig.align='center', fig.cap='Figura 2. Distribución del monto del préstamo (`loan_amnt`).'}
+knitr::include_graphics("imgs/loan_amnt.png")
+```
+
+- La tasa de interés `int_rate` presenta una cola derecha prolongada, con la mayoría de valores entre 8% y 16%, indicando una fuerte concentración de clientes en tramos moderados de riesgo.
+
+- Las correlaciones con la variable `loan_status_bin` revelan asociaciones destacadas en `sub_grade`, `int_rate` y `revol_util`, con coeficientes superiores a 0.20. Esto sugiere que el perfil crediticio y el uso de crédito disponible son relevantes para la predicción de incumplimiento.
+
+```{r fig3-correlaciones, out.width="100%", fig.align='center', fig.cap='Figura 3. Correlación de variables numéricas con la variable objetivo (`loan_status_bin`).'}
+knitr::include_graphics("imgs/corr.png")
+```
+
+- Se identificó un **desbalance de clases**, donde aproximadamente el 78% de los préstamos fueron pagados y el 22% resultaron en incumplimiento.
+
+```{r fig4-tabla-classes, results='asis'}
+tabla_clases <- data.frame(
+  `Clase` = c("0.0 (Buen pagador)", "1.0 (Incumplido)"),
+  `Proporción` = c(0.780995, 0.219005)
+)
+
+kable(tabla_clases,
+  caption = "Figura 4. Proporción de clases en la variable `loan_status_bin`",
+  digits = 4,
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_clases), width = "6cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+- Se visualizó la distribución de variables numéricas clave utilizando gráficos tipo violín. Estos muestran la presencia de **outliers**, colas largas y asimetría severa, lo cual justifica el uso de técnicas de escalamiento robusto como `RobustScaler`.
+
+```{r fig5-violin-numeric, out.width="100%", fig.align='center', fig.cap='Figura 5. Gráficos tipo violín de variables numéricas con IQR'}
+knitr::include_graphics("imgs/violin_numeric.png")
+```
+
+- En cuanto a las variables categóricas, se observó una relación entre la antigüedad laboral (`emp_length`) y la probabilidad de incumplimiento. Los clientes con más de 10 años de experiencia presentaron tasas más bajas de impago.
+
+```{r fig6-emp-length, out.width="90%", fig.align='center', fig.cap='Figura 6. Distribución de emp_length por clase de incumplimiento'}
+knitr::include_graphics("imgs/loan_status_per_emp_len.png")
+```
+
+- La tenencia de vivienda (`home_ownership`) también mostró diferencias importantes: quienes poseen casa o tienen hipoteca muestran menor proporción de incumplimiento respecto a los arrendatarios.
+
+```{r fig7-home-ownership, out.width="90%", fig.align='center', fig.cap='Figura 7. Distribución de home_ownership por clase'}
+knitr::include_graphics("imgs/loan_status_per_home_ownership.png")
+```
+
+- El propósito del préstamo (`purpose`) se asoció con el riesgo: `debt_consolidation` y `credit_card` fueron los motivos con mayor volumen e incidencia de impago, lo cual puede reflejar problemas estructurales de sobreendeudamiento.
+
+```{r fig8-purpose, out.width="100%", fig.align='center', fig.cap='Figura 8. Distribución de propósito del préstamo por clase'}
+knitr::include_graphics("imgs/loan_status_per_purpose.png")
+```
+
+- Finalmente, se examinó el componente temporal usando la tasa de incumplimiento por mes. Aunque no hay un patrón cíclico marcado, se observa una leve disminución en los últimos meses del año.
+
+```{r fig9-default-month, out.width="60%", fig.align='center', fig.cap='Figura 9. Tasa de incumplimiento por mes de emisión del préstamo'}
+knitr::include_graphics("imgs/debt_ratio_per_month.png")
+```
+
+---
+
+## 3.3 Hipótesis generadas
+
+A partir del análisis exploratorio, se plantean las siguientes hipótesis:
+
+- **H1:** Los préstamos con mayor tasa de interés (`int_rate`) tienen mayor probabilidad de incumplimiento.
+
+- **H2:** Estados como Mississippi y Alabama tienen mayor incidencia de morosidad, posiblemente por condiciones socioeconómicas.
+
+- **H3:** El mes de emisión del préstamo afecta el riesgo, por factores cíclicos (gastos de fin de año, vacaciones, etc.).
+
+- **H4:** El sub-grado del préstamo (`sub_grade`) tiene relación directa con la probabilidad de incumplimiento.
+
+- **H5:** Variables como `emp_length` y `home_ownership` reflejan estabilidad económica y podrían estar asociadas con menor riesgo.
+
+---
+
+# 4. Desarrollo del Modelo
+
+## 4.1 Preprocesamiento de datos
+
+El preprocesamiento fue una etapa crítica para garantizar la calidad del modelo. Se ejecutaron los siguientes pasos:
+
+### 4.1.1 Filtrado de observaciones
+
+Se eliminaron:
+
+- Filas con valores nulos en la variable objetivo (`loan_status`).
+- Estados ambiguos como `Current`, `Issued`, `In Grace Period`, `Late (16-30 days)`.
+- Esto redujo el tamaño del dataset de **887,379 a 268,277 observaciones**, una reducción del 70%.
+
+### 4.1.2 Selección y eliminación de columnas
+
+Se eliminaron:
+
+- Variables con más de 95% de NaNs.
+- Variables con fuga de información (e.g. `total_rec_prncp`, `last_pymnt_amnt`).
+- Variables con alta cardinalidad irrelevante (`emp_title`, `title`, `desc`).
+
+```{r}
+tabla_eliminadas <- data.frame(
+  `Tipo de variable` = c(
+    "Alta proporción de NaNs",
+    "Fuga de información",
+    "Alta cardinalidad",
+    "Valores futuros o derivados"
+  ),
+  `Criterio de eliminación` = c(
+    ">95% de valores nulos",
+    "Información no disponible en producción",
+    "Riesgo de sobreajuste y baja interpretabilidad",
+    "Relación con el desempeño posterior del préstamo"
+  )
+)
+
+knitr::kable(tabla_eliminadas,
+  caption = "Tabla 2: Tipos de variables eliminadas durante la limpieza de datos",
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_eliminadas), width = "4cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+  
+### 4.1.3 Ingeniería de características
+
+- **Variables temporales**: Se extrajo el mes de emisión y se codificó en componentes cíclicos (`sin` y `cos`).
+
+- **Historial crediticio**: Se creó la variable `credit_history_length` como diferencia entre `issue_d` y `earliest_cr_line`.
+
+- **Codificación binaria**: Se crearon `has_major_derog` y `has_delinq` para representar presencia/ausencia de morosidad pasada.
+
+### 4.1.4 Codificación y escalamiento
+
+- Se aplicó One-Hot Encoding a variables categóricas como `term`, `purpose`, `home_ownership`.
+
+- Se emplearon tres técnicas de escalado:
+
+  - `StandardScaler` para variables normales (`dti`, `installment`).
+  - `RobustScaler` para variables con outliers (`annual_inc`, `revol_bal`, `tot_cur_bal`).
+  - `MinMaxScaler` para variables ordinales (`sub_grade`).
+
+### 4.1.5 Desbalance de clases
+
+Se utilizó el argumento `class_weight='balanced'` en el entrenamiento para corregir el desbalance entre clases. También se contempló:
+
+- Usar métricas como F1-score, Precision y Recall.
+- Ajustar umbrales de decisión en la red neuronal.
+- Considerar sobremuestreo o submuestreo en validaciones futuras.
+
+---
+
+
+## 4.2 Modelo de referencia (baja complejidad)
+
+*[Implementación de modelo simple como baseline]*
+
+## 4.3 Arquitectura de la red neuronal
+
+*[Diseño y estructura de la red neuronal]*
+
+## 4.4 Optimización del modelo
+
+*[Proceso de optimización de hiperparámetros]*
+
+# 5. Evaluación y Validación
+
+## 5.1 Métricas de desempeño
+
+*[Resultados de las métricas de evaluación]*
+
+## 5.2 Comparación entre modelos
+
+*[Comparación del modelo neuronal vs modelo de referencia]*
+
+## 5.3 Validación cruzada
+
+*[Resultados de validación en diferentes conjuntos]*
+
+# 6. Scorecard del Modelo
+
+## 6.1 Construcción del scorecard
+
+*[Proceso de construcción del scorecard]*
+
+## 6.2 Interpretación de puntajes
+
+*[Cómo interpretar los puntajes del scorecard]*
+
+# 7. Análisis de Variables de Riesgo
+
+## 7.1 Importancia de las variables
+
+*[Análisis de la importancia de cada variable]*
+
+## 7.2 Perfiles de riesgo
+
+*[Identificación de perfiles de alto y bajo riesgo]*
+
+## 7.3 Factores críticos
+
+*[Variables que hacen más riesgosa a una persona]*
+
+# 8. Aplicación Web
+
+## 8.1 Diseño de la aplicación
+
+*[Diseño y arquitectura de la app web]*
+
+## 8.2 Funcionalidades
+
+*[Descripción de las funcionalidades implementadas]*
+
+## 8.3 Implementación
+
+*[Detalles técnicos de la implementación]*
+
+# 9. Caso de Uso
+
+## 9.1 Escenario de aplicación
+
+*[Descripción de un caso de uso real del modelo]*
+
+## 9.2 Beneficios del modelo
+
+*[Beneficios y valor agregado del modelo desarrollado]*
+
+# 10. Aprendizajes y Conclusiones
+
+## 10.1 Aprendizajes del proceso
+
+*[Listado de aprendizajes generados durante el modelamiento]*
+
+## 10.2 Limitaciones
+
+*[Limitaciones identificadas en el modelo]*
+
+## 10.3 Trabajo futuro
+
+*[Recomendaciones para trabajo futuro]*
+
+# Referencias
+
+*[Bibliografía relevante correctamente citada en formato APA]*
+
+# Anexos
+
+*[Material complementario: código, gráficas adicionales, etc.]*
