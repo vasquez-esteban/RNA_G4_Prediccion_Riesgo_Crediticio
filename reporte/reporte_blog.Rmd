@@ -155,6 +155,7 @@ Las métricas comunes para evaluar modelos de riesgo crediticio incluyen:
 
 # 3. Análisis Descriptivo de los Datos
 
+
 **El procedimiento completo se puede consultar en el repositorio de Github en nuestras [Referencias](#referencias)**
 
 ## 3.1 Descripción del dataset
@@ -316,7 +317,6 @@ A partir del análisis exploratorio, se plantean las siguientes hipótesis:
 ---
 
 # 4. Desarrollo del Modelo
-
 ## 4.1 Preprocesamiento de datos
 
 El preprocesamiento fue una etapa crítica para garantizar la calidad del modelo. Se ejecutaron los siguientes pasos:
@@ -390,41 +390,274 @@ Se utilizó el argumento `class_weight='balanced'` en el entrenamiento para corr
 - Usar métricas como F1-score, Precision y Recall.
 - Ajustar umbrales de decisión en la red neuronal.
 - Considerar sobremuestreo o submuestreo en validaciones futuras.
-
----
-
-
 ## 4.2 Modelo de referencia (baja complejidad)
 
-*[Implementación de modelo simple como baseline]*
+
+Como punto de partida, se entrenó un modelo de **regresión logística** utilizando los datos preprocesados y normalizados, sin utilizar ninguna arquitectura de red neuronal. Este modelo actúa como línea base (*baseline*) para comparar el rendimiento de aproximaciones más complejas.
+
+Dado el desbalance significativo en la variable objetivo (`loan_status_bin`), se aplicó la estrategia `class_weight='balanced'` en `scikit-learn`, que ajusta automáticamente la penalización de errores por clase durante el entrenamiento. Esto permite que el modelo preste mayor atención a la clase minoritaria (incumplimientos).
+
+```{r modelo-referencia-logit, results='asis'}
+tabla_logit <- data.frame(
+  Métrica = c("Precision", "Recall", "F1-Score"),
+  `Clase 0 (Cumplido)` = c(0.87, 0.66, 0.75),
+  `Clase 1 (Incumplido)` = c(0.35, 0.64, 0.45)
+)
+
+kable(tabla_logit,
+  caption = "Tabla 1. Métricas de desempeño del modelo de referencia (regresión logística balanceada)",
+  digits = 2,
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_logit), width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+- **Exactitud general**: 66%  
+- **AUC-ROC**: 0.708
+
+### Análisis
+
+El modelo base logra una AUC-ROC de **0.708**, lo cual indica una capacidad moderada para discriminar entre préstamos cumplidos e incumplidos. Aunque la precisión sobre la clase incumplida (1.0) es baja (0.35), el **recall alcanza 0.64**, lo que sugiere que el modelo logra capturar correctamente una fracción importante de los incumplimientos.
+
+Esto es clave en contextos financieros donde los **falsos negativos (no detectar un incumplimiento)** pueden tener consecuencias graves. No obstante, el desempeño global aún es limitado, lo que justifica la exploración de modelos más expresivos como redes neuronales artificiales en la siguiente sección.
+
+
 
 ## 4.3 Arquitectura de la red neuronal
 
-*[Diseño y estructura de la red neuronal]*
+Como primer acercamiento al problema, se implementó una red neuronal artificial **multicapa (MLP)** con arquitectura secuencial, diseñada para tareas de clasificación binaria con datos tabulares. Esta arquitectura es ampliamente usada como **modelo base estándar**, dado que permite capturar relaciones no lineales entre las variables sin recurrir a arquitecturas más profundas o especializadas.
+
+### Justificación de la arquitectura
+
+El diseño se enfocó en un equilibrio entre **capacidad de modelado** y **simplicidad**, evitando el sobreajuste en etapas iniciales del desarrollo. El número de capas, unidades y funciones de activación se seleccionó según las mejores prácticas para redes de baja profundidad en clasificación supervisada.
+
+### Componentes principales
+
+- **Capas densas (Dense)**: permiten que cada neurona se conecte a todas las salidas de la capa anterior. Se utilizaron dos capas ocultas:
+  - 32 neuronas en la primera capa
+  - 16 neuronas en la segunda capa
+  Ambas usan activación **ReLU**, que es eficiente computacionalmente y ayuda a mitigar el problema del gradiente desvanecido.
+
+- **Dropout**: mecanismo de regularización que apaga aleatoriamente una fracción de las neuronas durante el entrenamiento, reduciendo el riesgo de sobreajuste.  
+  - Se usó un **Dropout de 0.2** después de la primera capa oculta.
+  - Y **Dropout de 0.1** tras la segunda capa oculta.
+
+- **Capa de salida**: una sola neurona con activación **sigmoid**, adecuada para producir una probabilidad entre 0 y 1 para clasificación binaria.
+
+- **Optimizador Adam**: ampliamente utilizado por su eficiencia y robustez en problemas con datos escasos, ruidosos o no escalados perfectamente.  
+  - Se empleó una tasa de aprendizaje de `0.001`.
+
+- **Pérdida binary_crossentropy**: estándar para clasificación binaria.
+
+- **Métricas**: se midieron `accuracy` y `AUC` para evaluar desempeño global y capacidad de discriminación entre clases.
+
+- **Callbacks de entrenamiento**:
+  - `EarlyStopping`: previene el sobreajuste al detener el entrenamiento cuando `val_auc` no mejora tras 8 épocas.
+  - `ReduceLROnPlateau`: reduce dinámicamente el learning rate si no se detectan mejoras.
+
+- **Balanceo de clases**: se utilizaron pesos calculados con `class_weight='balanced'` para contrarrestar el desbalance entre clientes cumplidos e incumplidos.
+
+### Resultados del modelo base
+
+El modelo alcanzó un desempeño **competitivo como punto de partida**, con una AUC de validación superior a 0.70 y un buen **recall en la clase minoritaria** (clientes incumplidos), lo cual es deseable en contextos financieros.
+
+A continuación se presenta una tabla con las métricas principales por clase:
+
+```{r tabla-metricas-rna-base, results='asis'}
+library(knitr)
+library(kableExtra)
+library(magrittr)
+
+tabla_rna <- data.frame(
+  Métrica = c("Precision", "Recall", "F1-Score"),
+  `Clase 0 (Cumplido)` = c(0.87, 0.67, 0.76),
+  `Clase 1 (Incumplido)` = c(0.35, 0.64, 0.45)
+)
+
+kable(tabla_rna,
+  caption = "Tabla 2. Métricas de desempeño del primer modelo de red neuronal",
+  digits = 2,
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_rna), width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+El modelo alcanzó un desempeño **competitivo como punto de partida**, con una AUC de validación superior a 0.70 y un buen **recall en la clase minoritaria** (clientes incumplidos), lo cual es deseable en contextos financieros.
+
+### Limitaciones del modelo base
+
+A pesar de que el modelo base logró métricas aceptables (AUC ≈ 0.713 y recall ≈ 0.64), se identificaron las siguientes **limitaciones** que motivaron la exploración de arquitecturas más complejas y la optimización de hiperparámetros:
+
+- **Capacidad limitada**: la arquitectura poco profunda (solo dos capas ocultas) puede no ser suficiente para capturar interacciones complejas entre las variables.
+
+- **Estancamiento en validación**: la métrica `val_auc` se estabiliza rápidamente y no mejora, lo que sugiere que el modelo alcanza pronto su techo de generalización.
+
+- **Riesgo de alta varianza en datos nuevos**: al tener baja complejidad y pocos parámetros, podría no generalizar bien frente a distribuciones levemente distintas.
+
+- **Desempeño limitado en precisión**: la precisión sobre la clase positiva fue baja (~0.35), indicando una alta tasa de falsos positivos.
+
+- **Sin exploración de hiperparámetros**: los valores de dropout, learning rate y número de neuronas fueron seleccionados manualmente sin validación sistemática, lo que deja espacio para optimización.
+
 
 ## 4.4 Optimización del modelo
 
-*[Proceso de optimización de hiperparámetros]*
+### Evaluación del modelo profundo extendido
+
+Como parte del proceso de experimentación, se entrenó una red neuronal más profunda, compuesta por cinco capas densas con `BatchNormalization` y `Dropout` progresivo, y entrenada durante 100 épocas con early stopping desactivado para observar su comportamiento completo.
+
+#### Resultados en el conjunto de prueba:
+
+- **Exactitud (accuracy):** 67.9%
+- **AUC-ROC:** 0.6984
+- **Recall clase 1 (incumplidos):** 0.58
+- **Precisión clase 1:** 0.36
+- **F1-score clase 1:** 0.44
+
+A continuación, se presenta la tabla de métricas para ambas clases:
+
+```{r tabla-metricas-modelo2, results='asis'}
+library(knitr)
+library(kableExtra)
+library(magrittr)
+
+tabla_modelo2 <- data.frame(
+  Métrica = c("Precision", "Recall", "F1-Score"),
+  `Clase 0 (Cumplido)` = c(0.86, 0.71, 0.77),
+  `Clase 1 (Incumplido)` = c(0.36, 0.58, 0.44)
+)
+
+kable(tabla_modelo2,
+  caption = "Tabla 3. Métricas de desempeño del segundo modelo de red neuronal (100 épocas)",
+  digits = 2,
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_modelo2), width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+A pesar del entrenamiento prolongado y del incremento en capacidad, el modelo muestra signos de **sobreajuste**: la métrica `val_auc` se estanca e incluso disminuye levemente en las últimas épocas, mientras que `train_auc` continúa creciendo. Esto indica que el modelo está aprendiendo patrones específicos del conjunto de entrenamiento que no generalizan adecuadamente al conjunto de validación.
+
+Además, aunque el **recall para la clase de incumplimiento mejora** (0.58), la **precisión sigue siendo baja** (0.36), lo cual implica una alta tasa de falsos positivos. Esta situación puede llevar a decisiones erróneas en un entorno financiero real.
+
+Por lo tanto, este modelo no se selecciona como definitivo, y se plantea la necesidad de simplificar su arquitectura y realizar una búsqueda controlada de hiperparámetros.
+
+### Modelo final
 
 # 5. Evaluación y Validación
 
-## 5.1 Métricas de desempeño
+## 5.1 Resultados del modelo final
 
-*[Resultados de las métricas de evaluación]*
+El modelo final se entrenó con la mejor configuración obtenida a partir de una búsqueda exhaustiva de hiperparámetros. A continuación, se resumen sus resultados clave:
+
+- **Accuracy**: 65%
+- **AUC-ROC**: 0.718
+- **Recall (clase 1)**: 0.68
+- **Precisión (clase 1)**: 0.35
+- **F1-score (clase 1)**: 0.46
+
+Estos resultados reflejan un equilibrio razonable entre la identificación de clientes en riesgo y la generación de falsos positivos. La red fue entrenada utilizando `class_weight`, regularización `L1` y `L2`, `Dropout`, `BatchNormalization` y optimización con Adam + ReduceLROnPlateau.
+
+```{r tabla-metricas-modelo-final, results='asis'}
+tabla_final <- data.frame(
+  Métrica = c("Precision", "Recall", "F1-Score"),
+  `Clase 0 (Cumplido)` = c(0.88, 0.65, 0.74),
+  `Clase 1 (Incumplido)` = c(0.35, 0.68, 0.46)
+)
+
+kable(tabla_final,
+  caption = "Tabla 4. Métricas de desempeño del modelo final entrenado con búsqueda de hiperparámetros",
+  digits = 2,
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_final), width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+```{r loss-auc-curves, out.width="100%", fig.align='center', fig.cap='Figura 10. Evolución de pérdida y AUC durante el entrenamiento del modelo final'}
+knitr::include_graphics("imgs/loss_auc3.png")
+```
+
+```{r}
+knitr::include_graphics("imgs/confusion.png")
+```
+
+```{r}
+knitr::include_graphics("imgs/predict_dist.png")
+```
+
+```{r}
+knitr::include_graphics("imgs/roc.png")
+```
 
 ## 5.2 Comparación entre modelos
 
-*[Comparación del modelo neuronal vs modelo de referencia]*
+Se evaluaron tres modelos principales durante el desarrollo:
 
-## 5.3 Validación cruzada
+- **Modelo de referencia (Regresión logística)**: implementado con `class_weight='balanced'`, sirvió como línea base.
+- **Modelo base de red neuronal**: arquitectura simple de dos capas ocultas.
+- **Modelo final optimizado**: arquitectura profunda, optimizada mediante búsqueda de hiperparámetros.
 
-*[Resultados de validación en diferentes conjuntos]*
+A continuación se comparan las principales métricas de cada uno:
+
+```{r tabla-comparacion-modelos, results='asis'}
+tabla_comparacion <- data.frame(
+  Modelo = c("Regresión logística", "RNA base", "RNA final"),
+  `AUC-ROC` = c(0.708, 0.713, 0.718),
+  `Accuracy` = c(0.66, 0.66, 0.65),
+  `Recall (Clase 1)` = c(0.64, 0.64, 0.68),
+  `Precision (Clase 1)` = c(0.35, 0.35, 0.35),
+  `F1-Score (Clase 1)` = c(0.45, 0.45, 0.46)
+)
+
+kable(tabla_comparacion,
+  caption = "Tabla 5. Comparación de métricas entre los modelos evaluados",
+  digits = 3,
+  format = "html"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  ) %>%
+  column_spec(1:ncol(tabla_comparacion), width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+## 5.3 Validación
+
+Durante el entrenamiento de los modelos no se implementó validación cruzada explícita mediante *k-folds*, debido al elevado tamaño del conjunto de datos (más de 260,000 observaciones) y las limitaciones computacionales del entorno de desarrollo (GPU compartida de Kaggle con tiempos máximos de ejecución).
+
+En su lugar, se empleó una estrategia robusta de división estratificada del conjunto de datos:
+
+- **80% entrenamiento**
+- **20% prueba (test set)**
+  
+El conjunto de prueba se mantuvo completamente **aislado** durante el proceso de entrenamiento y ajuste de hiperparámetros. Además, se utilizaron mecanismos de regularización como `Dropout`, `EarlyStopping` y `ReduceLROnPlateau`, así como `class_weight` para el desbalance, lo cual ayudó a **mitigar el sobreajuste**.
+
+En experimentos previos, se evaluaron múltiples configuraciones del modelo utilizando esta división, y los resultados se mantuvieron estables y reproducibles, lo que refuerza la validez de la evaluación.
+
+Para trabajos futuros, se sugiere incorporar una validación cruzada estratificada (por ejemplo, `StratifiedKFold`) para mejorar la estimación del error generalizado y explorar técnicas como *nested cross-validation* si los recursos lo permiten.
 
 # 6. Scorecard del Modelo
 
 ## 6.1 Construcción del scorecard
-
-*[Proceso de construcción del scorecard]*
 
 ## 6.2 Interpretación de puntajes
 
