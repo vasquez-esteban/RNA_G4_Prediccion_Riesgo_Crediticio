@@ -4,7 +4,7 @@ numpy>=1.21.0
 scikit-learn>=1.2.0
 
 # Deep Learning (incluye tf.keras)
-tensorflow>=2.11.0
+tensorflow==2.18.0
 
 # Visualización
 matplotlib>=3.5.0

@@ -657,25 +657,88 @@ Para trabajos futuros, se sugiere incorporar una validación cruzada estratifica
 
 # 6. Scorecard del Modelo
 
-## 6.1 Construcción del scorecard
+## 6.1 Construcción del Scorecard
 
-## 6.2 Interpretación de puntajes
+Para construir el scorecard, se utilizó el modelo final previamente entrenado y optimizado. Este modelo estima una **probabilidad de incumplimiento (PD)** para cada cliente, es decir, la probabilidad de que un cliente caiga en mora.
 
-*[Cómo interpretar los puntajes del scorecard]*
+Para facilitar su interpretación, se transformaron estas probabilidades a una escala estandarizada de **300 a 850**, similar a los scores comerciales como el FICO. Esta transformación permite usar los resultados en contextos operativos, facilitando su comunicación e integración.
+
+## 6.2 Interpretación de Puntajes
+
+Los puntajes obtenidos permiten segmentar a los clientes según su riesgo estimado. A continuación se propone una clasificación básica que puede adaptarse a políticas de crédito más específicas:
+
+```{r}
+tabla_scorecard <- data.frame(
+  `Rango de Score` = c("300–499", "500–699", "700–850"),
+  `Nivel de Riesgo` = c("Bajo", "Moderado", "Alto"),
+  `Decisión sugerida` = c("Aprobar crédito", "Revisión manual o garantía", "Rechazar o limitar crédito")
+)
+
+kable(tabla_scorecard,
+  caption = "Tabla 4. Interpretación de los puntajes del scorecard crediticio",
+  format = "html"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  column_spec(1:3, width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+
+[Mostrar Dist Aqui]
+
+El score generado por el modelo tiene una distribución ligeramente más plana que la normal, pero no presenta asimetrías marcadas ni colas extremas. Esto es adecuado para su uso en credit scoring, ya que permite diferenciar bien a los clientes según su riesgo sin sesgos extremos.
+
+No se recomienda aplicar transformaciones adicionales, ya que el score es:
+
+- Interpretativamente claro (300–850)
+
+- Distribucionalmente estable
+
+- Adecuado para segmentación operativa
 
 # 7. Análisis de Variables de Riesgo
 
-## 7.1 Importancia de las variables
+### 7.1 Importancia de las Variables
 
-*[Análisis de la importancia de cada variable]*
+Para evaluar la contribución de cada variable en la predicción del modelo final, se utilizó el método **SHAP (SHapley Additive exPlanations)**. Este enfoque permite medir el impacto marginal de cada característica sobre la probabilidad estimada de incumplimiento, de forma interpretativa y consistente.
+
+La siguiente gráfica resume las **diez variables con mayor importancia global**, de acuerdo con el promedio absoluto de sus valores SHAP:
+
+![](shap_bar_importancia.png)
+
+Las variables con mayor influencia fueron:
+
+- `annual_inc`: clientes con menor ingreso anual presentan mayor riesgo.
+- `sub_grade`: niveles más bajos de sub-nivel crediticio están asociados con incumplimiento.
+- `term_ 60 months`: préstamos a 60 meses son más riesgosos que los de 36.
+- `dti`: clientes con mayor relación deuda/ingreso son más propensos al default.
+- `int_rate`: tasas de interés más altas están asociadas con mayor riesgo.
+- `loan_amnt`: montos de préstamo más altos pueden aumentar el riesgo si no están respaldados por capacidad de pago.
+- `home_ownership_MORTGAGE`: quienes tienen hipotecas muestran riesgos específicos.
+- `revol_util` y `total_rev_hi_lim`: medidas de crédito rotativo y límites de crédito también son determinantes.
+
+Estas variables reflejan tanto el perfil financiero como las condiciones del crédito, confirmando la coherencia del modelo con la lógica del negocio.
+
+---
+
+### 7.3 Factores Críticos
+
+La siguiente visualización muestra cómo **cada valor individual de las variables** influye en el output del modelo. Los puntos rojos representan valores altos de la variable, mientras que los azules indican valores bajos.
+
+![](shap_summary_plot.png)
+
+A partir del gráfico podemos concluir:
+
+- **Menor ingreso (`annual_inc`)** incrementa el riesgo: los puntos azules tienden hacia valores SHAP positivos (mayor probabilidad de incumplimiento).
+- **Mayor sub-grado (`sub_grade`)** → mayor riesgo (más puntos rojos con impacto positivo).
+- **Mayor `dti` e `int_rate`** también empujan hacia el incumplimiento.
+- **Valores altos en `loan_amnt` y `revol_util`** tienen efecto asimétrico pero relevante.
+- **Variables derivadas del calendario como `issue_month_sin` y `cos`** también influyen, aunque con menor peso.
+
+En conjunto, estos factores permiten comprender mejor qué tipo de perfil representa mayor riesgo y son fundamentales para la construcción de **políticas de crédito más robustas y personalizadas**.
 
 ## 7.2 Perfiles de riesgo
 
 *[Identificación de perfiles de alto y bajo riesgo]*
-
-## 7.3 Factores críticos
-
-*[Variables que hacen más riesgosa a una persona]*
 
 # 8. Aplicación Web
 
