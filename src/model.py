@@ -96,7 +96,7 @@ def predecir_score_crediticio(input_dict: dict) -> dict:
         (18, "issue_month_sin", sin_val),
         (19, "issue_month_cos", cos_val),
         (23, "has_coll_amt", input_dict["has_coll_amt"]),
-        (24, "term_ 60 months", input_dict["term_60_months"]),
+        (24, "term_ 60 months", input_dict["term_ 60 months"]),
         (35, "emp_length_Unknown", input_dict["emp_length_Unknown"]),
         (36, "home_ownership_MORTGAGE", input_dict["home_ownership_MORTGAGE"]),
     ]
