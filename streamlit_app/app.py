@@ -54,6 +54,11 @@ st.markdown("""
         margin-top: 20px;
         color: #1a1a1a;
     }
+    
+    div[data-testid="stMetricValue"] {
+    color: rgb(0, 0, 0);
+    }
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -66,11 +71,11 @@ st.title("📊 Calculadora de Score Crediticio")
 st.markdown("Ingresa la siguiente información para estimar el riesgo:")
 
 # 📥 Inputs de usuario
-loan_amnt = st.number_input("💰 Monto del préstamo", value=100000)
-int_rate = st.slider("📈 Tasa de interés (%)", 0.0, 30.0, 20.0)
-installment = st.number_input("📆 Cuota mensual", value=220)
-annual_inc = st.number_input("📊 Ingreso anual", value=120000)
-dti = st.slider("⚖️ DTI (deuda/ingreso %)", 0.0, 40.0, 10.0)
+loan_amnt = st.number_input(f":blue[💰 Monto del préstamo]", value=100000)
+int_rate = st.slider(f":blue[📈 Tasa de interés (%)]", 0.0, 30.0, 20.0)
+installment = st.number_input(f":blue[📆 Cuota mensual]", value=220)
+annual_inc = st.number_input(f":blue[📊 Ingreso anual]", value=120000)
+dti = st.slider(f":blue[⚖️ DTI (deuda/ingreso %)]", 0.0, 40.0, 10.0)
 
 # ▶️ Acción
 if st.button("Calcular score"):
@@ -98,5 +103,5 @@ if st.button("Calcular score"):
 
     resultado = predecir_score_crediticio(entrada)
 
-    st.metric("🎯 Score Crediticio", resultado["score_crediticio"])
+    st.metric(f":blue[🎯 Score Crediticio]", resultado["score_crediticio"])
     st.write(f"💥 Probabilidad de incumplimiento: **{resultado['prob_default']:.2%}**")
