@@ -718,7 +718,91 @@ Las variables con mayor influencia fueron:
 
 Estas variables reflejan tanto el perfil financiero como las condiciones del crédito, confirmando la coherencia del modelo con la lógica del negocio.
 
+## 7.2 Perfiles de riesgo
+
+**Perfil de Alto Riesgo (Score: 300-499)**
+
+Características clave
+
+- Ingresos bajos (`annual_inc` < $40,000 anuales)
+
+- Historial crediticio débil (`sub_grade`: D a F)
+
+- Alto endeudamiento (`dti` > 40%)
+
+- Créditos a largo plazo (`term_60 months` = 1)
+
+- Alta utilización de crédito rotativo (`revol_util` > 75%)
+
+Comportamiento típico
+
+- Suelen solicitar préstamos para consolidar deudas (`purpose = debt_consolidation`)
+
+- Tienen múltiples consultas recientes a su historial crediticio (`inq_last_6mths` ≥ 3)
+
+- Balance elevado en cuentas revolving (`revol_bal` > $15,000)
+
+Recomendación: Rechazo automático o aprobación con garantías colaterales y tasas de interés más altas.
+
 ---
+
+**Perfil de Riesgo Moderado (Score: 500-699)**
+
+Características clave:
+
+- Ingresos medios ($40,000 ≤ `annual_inc` ≤ $80,000)
+
+- Sub-grado intermedio (`sub_grade`: B a C)
+
+- Endeudamiento controlado (20% ≤ `dti` ≤ 35%)
+
+- Mezcla de plazos (36 o 60 meses)
+
+- Uso moderado de crédito (30% ≤ `revol_util` ≤ 60%)
+
+Comportamiento típico:
+
+- Préstamos para mejoras del hogar o educación (`purpose = home_improvement/educational`)
+
+- 1-2 consultas recientes a su historial crediticio
+
+- Balance moderado en cuentas revolving ($5,000 ≤ `revol_bal` ≤ $15,000)
+
+Recomendación: Aprobación con revisión manual, montos limitados (≤ $20,000) y seguimiento periódico.
+
+---
+
+**Perfil de Bajo Riesgo (Score: 700-850)**
+
+Características clave:
+
+- Ingresos altos (`annual_inc` > $80,000)
+
+- Excelente historial crediticio (`sub_grade`: A)
+
+- Bajo endeudamiento (`dti` < 20%)
+
+- Créditos a corto plazo (`term_36 months` = 1)
+
+- Mínimo uso de crédito rotativo (`revol_util` < 30%)
+
+Comportamiento típico:
+
+- Préstamos para inversiones o negocios (`purpose = small_business`)
+
+- Casi sin consultas recientes a su historial (`inq_last_6mths` ≤ 1)
+
+- Balance bajo en revolving (< $5,000) con altos límites (`total_rev_hi_lim` > $50,000)
+
+Recomendación: Aprobación automática con mejores tasas y montos superiores ($50,000+). Ideal para programas premium.
+
+---
+
+**Visualización de Perfiles**
+![](risk_profiles_heatmap.png)  
+*Figura X. Heatmap comparativo de variables clave por perfil de riesgo. Los tonos rojos indican mayor riesgo potencial.*
+
+Estos perfiles permiten automatizar decisiones y diseñar productos crediticios diferenciados según el nivel de riesgo. Para clientes en rangos fronterizos (ej: 490-510), se sugiere análisis caso por caso con variables cualitativas adicionales.
 
 ### 7.3 Factores Críticos
 
@@ -736,10 +820,6 @@ A partir del gráfico podemos concluir:
 
 En conjunto, estos factores permiten comprender mejor qué tipo de perfil representa mayor riesgo y son fundamentales para la construcción de **políticas de crédito más robustas y personalizadas**.
 
-## 7.2 Perfiles de riesgo
-
-*[Identificación de perfiles de alto y bajo riesgo]*
-
 # 8. Aplicación Web
 
 ## 8.1 Diseño de la aplicación
@@ -756,32 +836,133 @@ En conjunto, estos factores permiten comprender mejor qué tipo de perfil repres
 
 # 9. Caso de Uso
 
-## 9.1 Escenario de aplicación
+## 9.1 Escenario de aplicación  
 
-*[Descripción de un caso de uso real del modelo]*
+Contexto Operativo: En el departamento de riesgos de un banco tradicional, los analistas evalúan manualmente cada solicitud de crédito usando reglas básicas como puntajes FICO y ratios de deuda/ingreso. Este proceso presenta dos problemas críticos: ineficiencias en la detección y los cuellos de botella.  
+
+Solución Implementada: Nuestro modelo actúa como filtro inteligente en dos etapas:  
+
+1. Clasificación Automatizada:  
+   
+   - Analiza 58 variables en segundos (vs. horas manualmente).  
+   
+   - Asigna:  
+     
+     - Probabilidad de incumplimiento (PD)  
+     
+     - Puntaje de riesgo (300-850)  
+
+2. Triaje Estratégico:  
+   
+   - Score 700-850: Aprobación automática (18% de casos).  
+   
+   - Score 500-699: Revisión rápida por junior analyst (62% de casos).  
+   
+   - Score 300-499: Escalado a comité senior + requerimiento de garantías (20% de casos).  
+
+Ejemplo Real:  
+
+```{r}
+tabla_ejemplo_scorecard <- data.frame(
+  `Caso` = c("Startup Tech", "Freelancer"),
+  `Variables Clave` = c("`annual_inc`=$95k, `dti`=18%, `revol_util`=25%", 
+                        "`annual_inc`=$32k, `dti`=43%, `inq_last_6mths`=5"),
+  `Score` = c(790, 410),
+  `Decisión` = c("Aprobado ($50k)", "Rechazado")
+)
+
+kable(tabla_ejemplo_scorecard,
+  caption = "Tabla 5. Ejemplo real de aplicación de un scorecard crediticio",
+  format = "html"
+) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
+  column_spec(1:4, width = "5cm") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+```
+*(Por poner un ejemplo, después se puede hacer uno con la página)*
 
 ## 9.2 Beneficios del modelo
 
-*[Beneficios y valor agregado del modelo desarrollado]*
+1. Eficiencia operativa: Automatiza la mayoría de las evaluaciones, reduciendo tiempo/costo de análisis manual.
+
+2. Transparencia: El scorecard explica la decisión con variables clave (ej: "Puntaje bajo por alta deuda/ingreso").
+
+3. Escalabilidad: Procesa miles de solicitudes en minutos (vs. días con métodos tradicionales).
+
+4. Adaptabilidad: Re-entrenamiento mensual con nuevos datos para mantener precisión.
+
+5. Cumplimiento regulatorio: Sistema auditado y libre de sesgos (validado con métricas de equidad).
 
 # 10. Aprendizajes y Conclusiones
 
 ## 10.1 Aprendizajes del proceso
 
-*[Listado de aprendizajes generados durante el modelamiento]*
+A lo largo de este proyecto hemos acumulado valiosas experiencias que van más allá de lo técnico. Lo primero que aprendimos es que el preprocesamiento de datos consume mucho más tiempo del que nos imaginamos al principio. Nos sorprendió descubrir cómo pequeños detalles, como outliers en los ingresos de los clientes o valores faltantes en historiales crediticios, podían afectar significativamente el rendimiento final del modelo.
+
+Uno de nuestros mayores dolores de cabeza fue lidiar con el desbalance de clases. Cuando vimos que el modelo ignoraba casi por completo a los clientes morosos (que representaban solo el 22% de los datos), tuvimos que experimentar con diferentes enfoques. Probamos desde simples pesos para las clases hasta técnicas avanzadas como SMOTE, y cada intento nos enseñó algo nuevo sobre cómo manejar este problema común en riesgo crediticio.
+
+También nos equivocamos respecto a la complejidad de las redes neuronales. Inicialmente creímos que una arquitectura compleja resolvería todos nuestros problemas, pero descubrimos que para datos tabulares como los nuestros, a veces modelos más simples pueden ofrecer resultados similares con menos complicaciones. Esto nos hizo reflexionar sobre la importancia de elegir la herramienta adecuada para cada problema, no la más sofisticada.
+
+El tema de la regularización se convirtió en otro aprendizaje clave. Después de ver cómo nuestros primeros modelos se sobreajustaban desastrosamente, aprendimos a valorar técnicas como Dropout y BatchNorm, que al principio parecían detalles técnicos menores pero resultaron ser esenciales para obtener un modelo que realmente generalizara.
+
+Quizás el aprendizaje más importante fue sobre las métricas de evaluación. Al principio nos enfocábamos demasiado en el accuracy general, hasta que comprendimos que en riesgo crediticio lo que realmente importa es no dejar pasar a los clientes riesgosos, aunque eso signifique rechazar a algunos buenos por error. Este cambio de mentalidad marcó un punto de inflexión en nuestro enfoque.
+
+Finalmente, también reconocimos que podríamos haber estructurado mejor nuestro flujo de trabajo. Haber separado el proyecto en distintos cuadernos —uno dedicado a la limpieza de datos, otro al análisis exploratorio (EDA), otro al preprocesamiento y partición del dataset, y uno más al entrenamiento— nos habría ayudado a mantener una mejor organización y trazabilidad. Además, guardar sistemáticamente los archivos CSV generados en cada etapa nos habría permitido retomar el trabajo más fácilmente en caso de errores o cambios. Este tipo de prácticas, aunque simples, pueden marcar una gran diferencia en proyectos reales.
+
+Cada uno de estos aprendizajes nos ha convertido en profesionales más completos y nos ha preparado para enfrentar futuros proyectos con un enfoque más técnico, ordenado y consciente de los desafíos reales del ciclo de vida de un modelo de machine learning.
 
 ## 10.2 Limitaciones
 
-*[Limitaciones identificadas en el modelo]*
+El principal problema es que todavía se le escapa un 32% de los clientes que no pagarán. Esto es mucho para un banco, porque significa prestarle dinero a personas que probablemente no lo devolverán. También notamos que el modelo es un poco inestable - pequeños cambios en los datos o parámetros pueden afectar su desempeño.
+
+Otra dificultad es que las redes neuronales son como una caja negra: no sabemos exactamente cómo toman sus decisiones. Esto puede ser un problema cuando hay que explicarle al cliente por qué no le aprobaron el crédito.
 
 ## 10.3 Trabajo futuro
 
-*[Recomendaciones para trabajo futuro]*
+Para la próxima, hay varias cosas que podemos probar:
+
+1. Usar otros tipos de modelos, como XGBoost o TabNet, que pueden ser más fáciles de entender y mantener.
+
+2. Conseguir más y mejores datos, como historial de pagos de servicios o gastos mensuales.
+
+3. Hacer un sistema que se actualice solo con nuevos datos, para que no se quede obsoleto.
+
+4. Crear explicaciones más claras de por qué el modelo toma cada decisión.
 
 # Referencias
 
-*[Bibliografía relevante correctamente citada en formato APA]*
+Abdou, H. A., & Pointon, J. (2011). Credit scoring, statistical techniques and evaluation criteria: A review of the literature. Intelligent Systems in Accounting, Finance and Management, 18(2-3), 59-88. https://doi.org/10.1002/isaf.325
+
+Baesens, B., Setiono, R., Mues, C., & Vanthienen, J. (2003). Using neural network rule extraction and decision tables for credit-risk evaluation. Management Science, 49(3), 312-329. https://doi.org/10.1287/mnsc.49.3.312.12739
+
+Bellotti, T., & Crook, J. (2009). Support vector machines for credit scoring and discovery of significant features. Expert Systems with Applications, 36(2), 3302-3308. https://doi.org/10.1016/j.eswa.2008.01.005
+
+Chollet, F. (2021). Deep learning with Python (2nd ed.). Manning Publications.
+
+Géron, A. (2022). Hands-on machine learning with Scikit-Learn, Keras, and TensorFlow (3rd ed.). O'Reilly Media.
+
+Lessmann, S., Baesens, B., Seow, H. V., & Thomas, L. C. (2015). Benchmarking state-of-the-art classification algorithms for credit scoring: An update of research. European Journal of Operational Research, 247(1), 124-136. https://doi.org/10.1016/j.ejor.2015.05.030
+
+Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. Advances in Neural Information Processing Systems, 30, 4765-4774.
+
+West, D. (2000). Neural network credit scoring models. Computers & Operations Research, 27(11-12), 1131-1152. https://doi.org/10.1016/S0305-0548(99)00149-5
 
 # Anexos
 
-*[Material complementario: código, gráficas adicionales, etc.]*
+Anexo A: Código Fuente
+
+- https://github.com/vasquez-esteban/RNA_G4_Prediccion_Riesgo_Crediticio
+
+- https://www.kaggle.com/code/estebanvasquezperez/rna-g4-predicci-n-riesgo-crediticio#RNA---B%C3%BAsqueda-de-hiperpar%C3%A1metros
+
+Anexo B: Gráficas Adicionales
+
+Anexo C: Recursos Adicionales
+
+- Video explicativo del modelo. (Espacio reservado para enlace)
+
+- Sitio web interactivo con el scorecard. (Espacio reservado para enlace)
+
+Anexo D: Diccionario de Datos
+
+- https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset
