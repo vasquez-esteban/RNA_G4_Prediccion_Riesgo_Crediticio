@@ -156,7 +156,7 @@ Las métricas comunes para evaluar modelos de riesgo crediticio incluyen:
 # 3. Análisis Descriptivo de los Datos
 
 
-**El procedimiento completo se puede consultar en el repositorio de Github en nuestras [Referencias](#referencias)**
+**El procedimiento completo se puede consultar en el repositorio de Github en nuestros [Anexos](#anexos)**
 
 ## 3.1 Descripción del dataset
 
@@ -235,7 +235,7 @@ Se realizó una exploración visual y estadística del dataset. Entre los hallaz
 
 - La variable `loan_amnt` muestra una **distribución multimodal**, con picos en $5,000, $10,000 y $15,000. Además, se observa un límite superior abrupto en $35,000, lo cual probablemente responde a políticas internas de aprobación de montos.
 
-```{r fig2-loan-amount, out.width="70%", fig.align='center', fig.cap='Figura 2. Distribución del monto del préstamo (`loan_amnt`).'}
+```{r fig2-loan-amount, out.width="70%", fig.align='center', fig.cap='Figura 1. Distribución del monto del préstamo (`loan_amnt`).'}
 knitr::include_graphics("imgs/loan_amnt.png")
 ```
 
@@ -243,7 +243,7 @@ knitr::include_graphics("imgs/loan_amnt.png")
 
 - Las correlaciones con la variable `loan_status_bin` revelan asociaciones destacadas en `sub_grade`, `int_rate` y `revol_util`, con coeficientes superiores a 0.20. Esto sugiere que el perfil crediticio y el uso de crédito disponible son relevantes para la predicción de incumplimiento.
 
-```{r fig3-correlaciones, out.width="100%", fig.align='center', fig.cap='Figura 3. Correlación de variables numéricas con la variable objetivo (`loan_status_bin`).'}
+```{r fig3-correlaciones, out.width="100%", fig.align='center', fig.cap='Figura 2. Correlación de variables numéricas con la variable objetivo (`loan_status_bin`).'}
 knitr::include_graphics("imgs/corr.png")
 ```
 
@@ -256,7 +256,7 @@ tabla_clases <- data.frame(
 )
 
 kable(tabla_clases,
-  caption = "Figura 4. Proporción de clases en la variable `loan_status_bin`",
+  caption = "Tabla 1. Proporción de clases en la variable `loan_status_bin`",
   digits = 4,
   format = "html"
 ) %>%
@@ -270,31 +270,31 @@ kable(tabla_clases,
 
 - Se visualizó la distribución de variables numéricas clave utilizando gráficos tipo violín. Estos muestran la presencia de **outliers**, colas largas y asimetría severa, lo cual justifica el uso de técnicas de escalamiento robusto como `RobustScaler`.
 
-```{r fig5-violin-numeric, out.width="100%", fig.align='center', fig.cap='Figura 5. Gráficos tipo violín de variables numéricas con IQR'}
+```{r fig5-violin-numeric, out.width="100%", fig.align='center', fig.cap='Figura 3. Gráficos tipo violín de variables numéricas con IQR'}
 knitr::include_graphics("imgs/violin_numeric.png")
 ```
 
 - En cuanto a las variables categóricas, se observó una relación entre la antigüedad laboral (`emp_length`) y la probabilidad de incumplimiento. Los clientes con más de 10 años de experiencia presentaron tasas más bajas de impago.
 
-```{r fig6-emp-length, out.width="90%", fig.align='center', fig.cap='Figura 6. Distribución de emp_length por clase de incumplimiento'}
+```{r fig6-emp-length, out.width="90%", fig.align='center', fig.cap='Figura 4. Distribución de emp_length por clase de incumplimiento'}
 knitr::include_graphics("imgs/loan_status_per_emp_len.png")
 ```
 
 - La tenencia de vivienda (`home_ownership`) también mostró diferencias importantes: quienes poseen casa o tienen hipoteca muestran menor proporción de incumplimiento respecto a los arrendatarios.
 
-```{r fig7-home-ownership, out.width="90%", fig.align='center', fig.cap='Figura 7. Distribución de home_ownership por clase'}
+```{r fig7-home-ownership, out.width="90%", fig.align='center', fig.cap='Figura 5. Distribución de home_ownership por clase'}
 knitr::include_graphics("imgs/loan_status_per_home_ownership.png")
 ```
 
 - El propósito del préstamo (`purpose`) se asoció con el riesgo: `debt_consolidation` y `credit_card` fueron los motivos con mayor volumen e incidencia de impago, lo cual puede reflejar problemas estructurales de sobreendeudamiento.
 
-```{r fig8-purpose, out.width="100%", fig.align='center', fig.cap='Figura 8. Distribución de propósito del préstamo por clase'}
+```{r fig8-purpose, out.width="100%", fig.align='center', fig.cap='Figura 6. Distribución de propósito del préstamo por clase'}
 knitr::include_graphics("imgs/loan_status_per_purpose.png")
 ```
 
 - Finalmente, se examinó el componente temporal usando la tasa de incumplimiento por mes. Aunque no hay un patrón cíclico marcado, se observa una leve disminución en los últimos meses del año.
 
-```{r fig9-default-month, out.width="60%", fig.align='center', fig.cap='Figura 9. Tasa de incumplimiento por mes de emisión del préstamo'}
+```{r fig9-default-month, out.width="60%", fig.align='center', fig.cap='Figura 7. Tasa de incumplimiento por mes de emisión del préstamo'}
 knitr::include_graphics("imgs/debt_ratio_per_month.png")
 ```
 
@@ -405,7 +405,7 @@ tabla_logit <- data.frame(
 )
 
 kable(tabla_logit,
-  caption = "Tabla 1. Métricas de desempeño del modelo de referencia (regresión logística balanceada)",
+  caption = "Tabla 3. Métricas de desempeño del modelo de referencia (regresión logística balanceada)",
   digits = 2,
   format = "html"
 ) %>%
@@ -480,7 +480,7 @@ tabla_rna <- data.frame(
 )
 
 kable(tabla_rna,
-  caption = "Tabla 2. Métricas de desempeño del primer modelo de red neuronal",
+  caption = "Tabla 4. Métricas de desempeño del primer modelo de red neuronal",
   digits = 2,
   format = "html"
 ) %>%
@@ -537,7 +537,7 @@ tabla_modelo2 <- data.frame(
 )
 
 kable(tabla_modelo2,
-  caption = "Tabla 3. Métricas de desempeño del segundo modelo de red neuronal (100 épocas)",
+  caption = "Tabla 5. Métricas de desempeño del segundo modelo de red neuronal (100 épocas)",
   digits = 2,
   format = "html"
 ) %>%
@@ -579,7 +579,7 @@ tabla_final <- data.frame(
 )
 
 kable(tabla_final,
-  caption = "Tabla 4. Métricas de desempeño del modelo final entrenado con búsqueda de hiperparámetros",
+  caption = "Tabla 6. Métricas de desempeño del modelo final entrenado con búsqueda de hiperparámetros",
   digits = 2,
   format = "html"
 ) %>%
@@ -591,19 +591,19 @@ kable(tabla_final,
   row_spec(0, bold = TRUE, color = "black", background = "lightgray")
 ```
 
-```{r loss-auc-curves, out.width="100%", fig.align='center', fig.cap='Figura 10. Evolución de pérdida y AUC durante el entrenamiento del modelo final'}
+```{r loss-auc-curves, out.width="100%", fig.align='center', fig.cap='Figura 8. Evolución de pérdida y AUC durante el entrenamiento del modelo final'}
 knitr::include_graphics("imgs/loss_auc3.png")
 ```
 
-```{r}
+```{r confusion_mat, fig.align='center', fig.cap='Figura 9. Matriz de confusión del modelo final'}
 knitr::include_graphics("imgs/confusion.png")
 ```
 
-```{r}
+```{r dist_preds, fig.align='center', fig.cap='Figura 10. Distribución de las clases predichas'}
 knitr::include_graphics("imgs/predict_dist.png")
 ```
 
-```{r}
+```{r roc_curve, fig.align='center', fig.cap='Figura 11. Curva ROC del modelo final'}
 knitr::include_graphics("imgs/roc.png")
 ```
 
@@ -628,7 +628,7 @@ tabla_comparacion <- data.frame(
 )
 
 kable(tabla_comparacion,
-  caption = "Tabla 5. Comparación de métricas entre los modelos evaluados",
+  caption = "Tabla 7. Comparación de métricas entre los modelos evaluados",
   digits = 3,
   format = "html"
 ) %>%
@@ -675,7 +675,7 @@ tabla_scorecard <- data.frame(
 )
 
 kable(tabla_scorecard,
-  caption = "Tabla 4. Interpretación de los puntajes del scorecard crediticio",
+  caption = "Tabla 8. Interpretación de los puntajes del scorecard crediticio",
   format = "html"
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
@@ -703,7 +703,9 @@ Para evaluar la contribución de cada variable en la predicción del modelo fina
 
 La siguiente gráfica resume las **diez variables con mayor importancia global**, de acuerdo con el promedio absoluto de sus valores SHAP:
 
-![](shap_bar_importancia.png)
+```{r shap_bar, out.width="65%", fig.align='center', fig.cap='Figura 12. Resumen de SHAP sobre las características más importantes'}
+knitr::include_graphics("imgs/shap_bar_importancia.png")
+```
 
 Las variables con mayor influencia fueron:
 
@@ -796,19 +798,15 @@ Comportamiento típico:
 
 Recomendación: Aprobación automática con mejores tasas y montos superiores ($50,000+). Ideal para programas premium.
 
----
-
-**Visualización de Perfiles**
-![](risk_profiles_heatmap.png)  
-*Figura X. Heatmap comparativo de variables clave por perfil de riesgo. Los tonos rojos indican mayor riesgo potencial.*
-
 Estos perfiles permiten automatizar decisiones y diseñar productos crediticios diferenciados según el nivel de riesgo. Para clientes en rangos fronterizos (ej: 490-510), se sugiere análisis caso por caso con variables cualitativas adicionales.
 
 ### 7.3 Factores Críticos
 
 La siguiente visualización muestra cómo **cada valor individual de las variables** influye en el output del modelo. Los puntos rojos representan valores altos de la variable, mientras que los azules indican valores bajos.
 
-![](shap_summary_plot.png)
+```{r shap_summ, out.width="65%", fig.align='center', fig.cap='Figura 13. Resumen de SHAP sobre las características más importantes'}
+knitr::include_graphics("imgs/shap_summary_plot.png")
+```
 
 A partir del gráfico podemos concluir:
 
@@ -873,7 +871,7 @@ tabla_ejemplo_scorecard <- data.frame(
 )
 
 kable(tabla_ejemplo_scorecard,
-  caption = "Tabla 5. Casos reales clasificados por el scorecard crediticio",
+  caption = "Tabla 9. Casos reales clasificados por el scorecard crediticio",
   format = "html"
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
@@ -932,6 +930,8 @@ Para la próxima, hay varias cosas que podemos probar:
 
 # Referencias
 
+**Todos los links se abren con clic derecho > abrir en nueva pestaña**
+
 Abdou, H. A., & Pointon, J. (2011). Credit scoring, statistical techniques and evaluation criteria: A review of the literature. Intelligent Systems in Accounting, Finance and Management, 18(2-3), 59-88. https://doi.org/10.1002/isaf.325
 
 Baesens, B., Setiono, R., Mues, C., & Vanthienen, J. (2003). Using neural network rule extraction and decision tables for credit-risk evaluation. Management Science, 49(3), 312-329. https://doi.org/10.1287/mnsc.49.3.312.12739
@@ -950,11 +950,13 @@ West, D. (2000). Neural network credit scoring models. Computers & Operations Re
 
 # Anexos
 
+**Todos los links se abren con clic derecho > abrir en nueva pestaña**
+
 Anexo A: Código Fuente
 
 - https://github.com/vasquez-esteban/RNA_G4_Prediccion_Riesgo_Crediticio
 
-- https://www.kaggle.com/code/estebanvasquezperez/rna-g4-predicci-n-riesgo-crediticio#RNA---B%C3%BAsqueda-de-hiperpar%C3%A1metros
+- https://www.kaggle.com/code/estebanvasquezperez/rna-g4-predicci-n-riesgo-crediticio
 
 Anexo B: Gráficas Adicionales
 
