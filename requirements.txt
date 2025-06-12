@@ -1,10 +1,10 @@
 # Ciencia de datos
 pandas
 numpy
-scikit-learn
+scikit-learn>=1.2.0
 
 # Deep Learning (incluye tf.keras)
-tensorflow
+tensorflow==2.18.0
 
 # Web App
 streamlit>=1.18.0
