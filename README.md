@@ -1,121 +1,49 @@
-# Trabajo 2: Predicción del Riesgo Crediticio
 
-## Descripción del Proyecto
+# Predicción del Riesgo Crediticio con Redes Neuronales
 
-Este proyecto hace parte del curso _Redes Neuronales y Algoritmos Bioinspirados_ de la Universidad Nacional de Colombia. Se abordan técnicas de redes neuronales artificiales y se crea un modelo predictivo, un reporte técnico, un video promocional y un sitio web con el modelo.
+Este proyecto implementa un sistema de predicción de riesgo crediticio usando redes neuronales profundas. Se desarrolla un pipeline completo que incluye exploración y limpieza de datos, modelado con Keras, explicación de resultados con scorecards e interpretabilidad, y una interfaz de consulta vía web desarrollada en Streamlit.
 
-## Tareas a Realizar (En Orden de Ejecución)
+---
 
-## Esteban (EDA, análisis exploratorio y preparación de datos)
-
-- Limpieza y preprocesamiento del dataset (manejo de NAs, codificación binaria de `loan_status`).
-- Análisis descriptivo y visualización inicial (distribución, correlaciones, variables más relevantes).
-- Generación de reportes parciales con insights sobre variables riesgosas.
-- Preparación de datos para el entrenamiento (split train/test, escalado).
-- Documentar hipótesis y resultados del análisis exploratorio en el reporte técnico.
-
-## Tomás (Modelado con Redes Neuronales)
-
-- Construcción del modelo básico de red neuronal con TensorFlow/Keras.
-- Optimización de la arquitectura: número de capas, neuronas, funciones de activación.
-- Entrenamiento y validación del modelo con métricas (AUC, accuracy, recall).
-- Generar la scorecard basada en la salida del modelo (binarización, escalado).
-- Interpretación del modelo: identificar variables que influyen más en la predicción.
-- Guardar el modelo entrenado y los objetos necesarios (scaler, encoder).
-- Documentar el proceso de modelado y resultados en el reporte técnico.
-
-## Marcos (Desarrollo web y video promocional)
-
-- Estructura y diseño inicial de la aplicación web con Streamlit.
-- Implementar la carga de datos de entrada desde formulario de usuario.
-- Mostrar el scorecard y la comparación del score con la población general.
-- Integrar gráficos y visualizaciones (interactivas o estáticas) Si existen.
-- Coordinar la creación del video promocional: guion, grabación, edición.
-- Asegurar que el video resalte la solución y cómo usar la app.
-- Documentar el desarrollo web con una guía de uso.
-
-## Jose (Desarrollo web y video)
-
-- Apoyo en la implementación frontend/backend en Streamlit (formulario, carga modelo).
-- Implementar funciones para calcular el score en tiempo real basado en inputs.
-- Integrar enlaces al reporte técnico y material promocional en la app.
-- Colaborar en la grabación y edición del video promocional.
-- Revisión final y pruebas de usabilidad de la aplicación web.
-- Documentar los pasos de despliegue y recomendaciones para usuarios.
-
-## Tareas comunes / coordinadas
-
-- Reuniones de sincronización: Todos los Lunes Reuniones cortas para mostrar avances.
-- Revisión y feedback cruzado de código y documentación.
-- Ensayo final del video y prueba de la aplicación web para demo.
-
-## Links Relevantes
-
-- 📝 [Entrada de Blog en RPubs](https://rpubs.com/)
-- 🌐 [Link al sitio en Streamlit](https://streamlit.io/)
-
-## Estructura
+## Estructura del Proyecto
 
 ```
 RNA_G4_Prediccion_Riesgo_Crediticio/
-├── requirements.txt # ✅ Requisitos de Python para todo el proyecto (Debe actualizarse)
-├── README.md # 📘 Instrucciones del proyecto
+├── README.md
+├── requirements.txt
+├── setup.sh / setup.bat        # Scripts para crear entorno virtual
 │
-├── files/ # 📂 Datos y artefactos del modelo
-│ ├── input/ # 📥 Datos crudos (Aquí se pone el csv del gitignore)
-│ │ └── LCDataDictionary.xlsx
-│ └── output/ # 📤 Modelos entrenados, escaladores, etc.
-│ ├── modelo_credito.pkl
-│ └── scaler_score_credito.pkl
+├── files/
+│   ├── input/                  # Datos de entrada (loan.csv, diccionario)
+│   └── output/                 # Modelo final, escaladores y valores por defecto
 │
-├── src/ # 🔧 Código fuente
-│ ├── eda_credito.py
-│ ├── entrenamiento_modelo.py
-│ └── utils_modelo.py
+├── src/                        # Lógica del modelo y entrenamiento
+│   ├── model.py
+│   └── rna-g4-predicci-n-riesgo-crediticio.ipynb
 │
-├── streamlit_app/ # 🌐 App web
-│ └── app.py
+├── reporte/                    # Reporte técnico en RMarkdown
+│   ├── reporte_blog.Rmd
+│   ├── reporte_blog.html
+│   └── imgs/                   # Gráficas utilizadas en el reporte
 │
-├── reporte/ # 📄 Reporte en RMarkdown
-│ └── reporte_blog.Rmd
+├── streamlit_app/             # Aplicación web
+│   └── app.py
 │
-└── video/ # 🎥 Video promocional
-└── video_promocional.mp4
+└── video/                      # Recursos del video
 ```
 
-## Requisitos
+---
 
-0. Colocar el [loan.csv](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data) en /files/input
+## Guía Rápida de Ejecución
 
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/vasquez-esteban/RNA_G4_Prediccion_Riesgo_Crediticio
-   ```
+### 1. Clonar el repositorio
 
-### Para Visualizar y Generar el Reporte en R
+```bash
+git clone https://github.com/vasquez-esteban/RNA_G4_Prediccion_Riesgo_Crediticio
+cd RNA_G4_Prediccion_Riesgo_Crediticio
+```
 
-Para el reporte técnico en R se necesita:
-
-- R (versión recomendada: 4.0 o superior)
-- RStudio (versión recomendada: 1.4 o superior)
-  MacOS y Linux
-- 1.1. Abre el archivo `/reporte/reporte_blog.Rmd` en RStudio
-
-- 1.2. Instala las dependencias necesarias ejecutando los primeros bloques de código manualmente desde RStudio:
-
-  ```R
-  # Este código se encuentra en los primeros bloques del archivo Rmd
-  install.packages(c("ggplot2", "dplyr", "readxl", "gifski", "gganimate"))
-  # Más dependencias según sea necesario
-  ```
-
-- 1.3. Generar el archivo con RPUBS.
-
-### Para Desarrollo en Python (EDA, Modelo de redes y Streamlit)
-
-#### Configuración En Linux y Mac
-
-Ejecute los siguientes comandos en el terminal:
+### 2. Configurar entorno Python (Linux/macOS)
 
 ```bash
 python3 -m venv .venv
@@ -123,24 +51,62 @@ source .venv/bin/activate
 source setup.sh
 ```
 
-#### Configuración en Windows
-
-Ejecute los siguientes comandos en el terminal:
+#### En Windows:
 
 ```bash
 python3 -m venv .venv
 .venv\Scripts\activate
-setup
+setup.bat
 ```
 
+---
+
+## Ejecutar la aplicación web
+
 ```bash
-# Ejecución en Streamlit
 streamlit run streamlit_app/app.py
 ```
 
-## Versiones
+Permite ingresar los datos de un cliente y obtener en tiempo real su score crediticio estimado por el modelo neuronal.
 
-El repositorio muestra un desarrollo iterativo con diferentes versiones:
+---
 
-- v10.0 - Entrega Final
-- v0.0 - Inicialización del proyecto
+## Generar el reporte técnico
+
+Requiere tener instalado **R** y **RStudio**.
+
+1. Abrir el archivo `reporte/reporte_blog.Rmd`.
+2. Instalar los paquetes necesarios:
+
+```r
+install.packages(c("ggplot2", "dplyr", "readxl", "kableExtra", "gganimate"))
+```
+
+3. Ejecutar todos los chunks o compilar directamente como `HTML`.
+
+El reporte incluye el análisis exploratorio, justificación del modelo, métricas de desempeño y scorecard interpretativo.
+
+---
+
+## Publicaciones
+
+- Reporte en RPubs: [Reporte](https://rpubs.com/evasp/rna-g4-datos-tabulares)
+- App en Streamlit: [App Web](Link)
+
+---
+
+## Requisitos
+
+- Python ≥ 3.10
+- TensorFlow ≥ 2.12
+- Streamlit ≥ 1.20
+- R ≥ 4.0
+- R packages: `rmarkdown`, `kableExtra`, `ggplot2`, `readxl`, `gganimate`, entre otros.
+
+Todas las dependencias de Python están listadas en `requirements.txt`.
+
+---
+
+## Versión Final
+
+- Entrega final del proyecto, con modelo optimizado, aplicación funcional y documentación completa.
