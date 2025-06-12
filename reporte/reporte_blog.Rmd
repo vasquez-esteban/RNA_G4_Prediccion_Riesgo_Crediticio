@@ -989,6 +989,20 @@ Presenta SHAP, una técnica de interpretación unificada y teóricamente sólida
 West, D. (2000). Neural network credit scoring models. *Computers & Operations Research, 27*(11–12), 1131–1152. https://doi.org/10.1016/S0305-0548(99)00149-5  
 Estudio pionero sobre el uso de redes neuronales en credit scoring. Ofrece un marco comparativo con estudios clásicos y justifica el enfoque metodológico elegido para modelar el riesgo crediticio.
 
+# Contribuciones Individuales
+
+### Esteban Vásquez  
+Participó en la fase de exploración y limpieza del conjunto de datos, aplicando técnicas de codificación, escalado y detección de variables irrelevantes o con *data leakage*. Se encargó del análisis en profundidad de los resultados del modelo de red neuronal, incluyendo el ajuste de hiperparámetros, selección de arquitectura final, generación de métricas, gráficas y visualizaciones interpretativas. También fue responsable del análisis de interpretabilidad con SHAP y de la redacción integral del reporte técnico en RMarkdown.
+
+### Tomás Rodríguez  
+Contribuyó al preprocesamiento del dataset, definición de conjuntos de entrenamiento y evaluación, y construcción del modelo de red neuronal en TensorFlow/Keras. Participó en la implementación de la arquitectura base y en los primeros experimentos de evaluación, incluyendo la configuración de métricas y técnicas de regularización. También apoyó el desarrollo del scorecard interpretativo a partir del modelo entrenado. Ayudó en la escritura del reporte y elaboración de casos de prueba.
+
+### Jose Martínez  
+Desarrolló la aplicación web interactiva en Streamlit, integrando el modelo entrenado con lógica de predicción. Fue responsable de la validación de formularios, manejo de entradas del usuario y conexión con los escaladores y modelo. Además, colaboró en la grabación y edición del video promocional.
+
+### Marcos Pérez  
+Apoyó la implementación de la app web junto a Jose, particularmente en el diseño visual y pruebas funcionales. También lideró la producción del video promocional, incluyendo el guion, grabación y edición, con enfoque en comunicar claramente el uso y beneficios del sistema desarrollado.
+
 # Anexos
 
 **Todos los links se abren con clic derecho > abrir en nueva pestaña**
