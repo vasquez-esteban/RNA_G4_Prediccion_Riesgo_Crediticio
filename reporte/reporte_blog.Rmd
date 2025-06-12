@@ -95,11 +95,17 @@ knitr::opts_chunk$set(
 
 <div style="page-break-after: always;"></div>
 
-# Resumen
+# Resumen ejecutivo
 
-Este trabajo presenta el desarrollo de un modelo de riesgo crediticio basado en redes neuronales artificiales utilizando un conjunto de datos públicos. El objetivo es predecir la probabilidad de incumplimiento de pago de los clientes de una entidad financiera, utilizando variables relacionadas con su comportamiento financiero y características personales.
+Este proyecto se centra en el desarrollo de un sistema para predecir el riesgo crediticio, utilizando redes neuronales y un conjunto de datos realista de LendingClub. La meta fue crear un modelo predictivo sólido que pueda identificar de manera temprana a aquellos solicitantes con una alta probabilidad de incumplimiento, logrando un equilibrio entre el rendimiento predictivo y la interpretabilidad, lo que lo hace apto para su uso en entornos financieros reales.
 
-El proyecto sigue un enfoque integral: desde la limpieza y exploración de datos hasta el desarrollo, evaluación e interpretación del modelo. Como parte clave del entregable, se construyó un scorecard interpretable que resume el riesgo de cada cliente en una escala comprensible. Además, se implementó una aplicación web para evaluar casos individuales de riesgo crediticio en tiempo real. Los resultados muestran que el modelo propuesto supera a modelos de referencia en métricas clave de clasificación, como AUC-ROC y precisión, lo que evidencia su potencial utilidad en entornos reales.
+El proceso comenzó con una fase detallada de exploración y limpieza de datos. Se eliminaron variables irrelevantes que tenían una alta proporción de valores nulos o que eran propensas a *data leakage*, siguiendo las mejores prácticas de limpieza de datos. Luego, se aplicaron transformaciones adecuadas a las variables temporales, categóricas y numéricas, utilizando técnicas de escalado que se adaptan a la distribución de cada variable (MinMaxScaler y RobustScaler).
+
+Dado el notable desbalance de clases en la variable objetivo, se implementaron estrategias específicas, como la ponderación de clases durante el entrenamiento y el uso de métricas como AUC-ROC y F1-score para evaluar el rendimiento. El modelo final, una red neuronal multicapa entrenada con Keras y TensorFlow, logró resultados sólidos, alcanzando una precisión del 65% y un AUC superior a 0.71. 
+
+Para aumentar la transparencia del sistema, se creó un scorecard interpretable que ayuda a entender la lógica detrás de las predicciones del modelo. Además, se desarrolló una interfaz web funcional que permite a los usuarios ingresar su información crediticia y recibir un resultado inmediato sobre su perfil de riesgo, integrando el modelo en un entorno accesible para los usuarios finales.
+
+Este trabajo demuestra que es posible utilizar modelos avanzados de aprendizaje profundo en problemas de scoring crediticio, siempre que se implementen controles adecuados para evitar sesgos y fugas de información, y se incorporen mecanismos de supervisión. También se evidenció que se pueden hacer mejoras en los procesos para alcanzar mejores resultados.
 
 # 1. Introducción
 
@@ -591,21 +597,35 @@ kable(tabla_final,
   row_spec(0, bold = TRUE, color = "black", background = "lightgray")
 ```
 
+El modelo final muestra un comportamiento asimétrico entre clases, como es habitual en problemas de clasificación desbalanceada. La clase 0 (clientes cumplidores) presenta alta precisión (0.88) y un F1-score de 0.74, indicando que el modelo predice correctamente la mayoría de los casos sin incurrir en demasiados falsos positivos.
+
+En contraste, para la clase 1 (clientes incumplidos), aunque la precisión es baja (0.35), el *recall* alcanza 0.68, lo cual implica que el modelo es capaz de identificar una buena proporción de incumplimientos, aun a costa de más falsos positivos. Esto resulta aceptable en escenarios donde el costo de no detectar a un mal pagador es mayor que clasificar erróneamente a un buen cliente. El F1-score de 0.46 para la clase 1 refleja un equilibrio razonable entre ambas métricas.
+
+En conjunto, estas cifras validan el enfoque adoptado: priorizar la sensibilidad en la clase de riesgo manteniendo una tasa controlada de errores en la clase mayoritaria.
+
 ```{r loss-auc-curves, out.width="100%", fig.align='center', fig.cap='Figura 8. Evolución de pérdida y AUC durante el entrenamiento del modelo final'}
 knitr::include_graphics("imgs/loss_auc3.png")
 ```
+
+La evolución de la función de pérdida muestra una reducción estable tanto en entrenamiento como validación, con ligera oscilación en la validación, indicando ausencia de sobreajuste. El AUC de validación se estabiliza alrededor de 0.718, confirmando que el modelo es capaz de discriminar razonablemente entre clases, sin pérdida de generalización.
 
 ```{r confusion_mat, fig.align='center', fig.cap='Figura 9. Matriz de confusión del modelo final'}
 knitr::include_graphics("imgs/confusion.png")
 ```
 
+El modelo clasifica correctamente 7,947 casos de incumplimiento (verdaderos positivos), con 3,804 falsos negativos. El total de aciertos en la clase cumplidora es de 27,044, aunque se presentan 14,861 falsos positivos. Este patrón evidencia un enfoque conservador del modelo, con mayor tendencia a emitir falsos positivos que falsos negativos, lo cual puede ser deseable en contextos financieros donde los incumplimientos implican alto riesgo.
+
 ```{r dist_preds, fig.align='center', fig.cap='Figura 10. Distribución de las clases predichas'}
 knitr::include_graphics("imgs/predict_dist.png")
 ```
 
+Las distribuciones de probabilidades predichas muestran cierta separación de clases. Mientras que la clase 0 (cumple) se concentra en la izquierda, la clase 1 (incumple) se concentra más en la derecha. Esta separación sugiere que el modelo logra asignar algunos puntajes diferenciables por clase, lo que es útil para calibrar decisiones bajo distintos umbrales de riesgo.
+
 ```{r roc_curve, fig.align='center', fig.cap='Figura 11. Curva ROC del modelo final'}
 knitr::include_graphics("imgs/roc.png")
 ```
+
+La curva ROC del modelo final refleja un AUC de 0.718. Aunque no es un valor extremadamente alto, está por encima del umbral de 0.7 que se considera aceptable en problemas reales de clasificación binaria con desbalance. El modelo mantiene una sensibilidad adecuada sin sacrificar especificidad en exceso.
 
 ## 5.2 Comparación entre modelos
 
@@ -639,6 +659,9 @@ kable(tabla_comparacion,
   column_spec(1:ncol(tabla_comparacion), width = "5cm") %>%
   row_spec(0, bold = TRUE, color = "black", background = "lightgray")
 ```
+
+El modelo final de red neuronal obtiene un AUC ligeramente superior al modelo base y al de regresión logística. Aunque la precisión se mantiene constante en los tres casos, el modelo final mejora el *recall* en la clase positiva (clientes que incumplen), lo que indica una mejor capacidad de detección de riesgo. En contextos de scoring crediticio, esta mejora puede justificar el uso del modelo más complejo.
+
 
 ## 5.3 Validación
 
@@ -682,8 +705,6 @@ kable(tabla_scorecard,
   column_spec(1:3, width = "5cm") %>%
   row_spec(0, bold = TRUE, color = "black", background = "lightgray")
 ```
-
-[Mostrar Dist Aqui]
 
 El score generado por el modelo tiene una distribución ligeramente más plana que la normal, pero no presenta asimetrías marcadas ni colas extremas. Esto es adecuado para su uso en credit scoring, ya que permite diferenciar bien a los clientes según su riesgo sin sesgos extremos.
 
@@ -932,21 +953,41 @@ Para la próxima, hay varias cosas que podemos probar:
 
 **Todos los links se abren con clic derecho > abrir en nueva pestaña**
 
-Abdou, H. A., & Pointon, J. (2011). Credit scoring, statistical techniques and evaluation criteria: A review of the literature. Intelligent Systems in Accounting, Finance and Management, 18(2-3), 59-88. https://doi.org/10.1002/isaf.325
+Abdou, H. A., & Pointon, J. (2011). Credit scoring, statistical techniques and evaluation criteria: A review of the literature. *Intelligent Systems in Accounting, Finance and Management, 18*(2–3), 59–88. https://doi.org/10.1002/isaf.325  
+Este artículo ofrece una revisión de los métodos estadísticos aplicados al credit scoring, así como criterios de evaluación utilizados comúnmente en la literatura. Sirve como marco de referencia para contextualizar el uso de métricas como AUC y F1-score, más allá del simple accuracy.
 
-Baesens, B., Setiono, R., Mues, C., & Vanthienen, J. (2003). Using neural network rule extraction and decision tables for credit-risk evaluation. Management Science, 49(3), 312-329. https://doi.org/10.1287/mnsc.49.3.312.12739
+Baesens, B., Setiono, R., Mues, C., & Vanthienen, J. (2003). Using neural network rule extraction and decision tables for credit-risk evaluation. *Management Science, 49*(3), 312–329. https://doi.org/10.1287/mnsc.49.3.312.12739  
+Este estudio demuestra cómo las redes neuronales pueden complementarse con mecanismos de extracción de reglas y tablas de decisión para aumentar la interpretabilidad en problemas de evaluación de riesgo crediticio. Apoya el uso de herramientas explicativas como SHAP y scorecards derivados del modelo.
 
-Bellotti, T., & Crook, J. (2009). Support vector machines for credit scoring and discovery of significant features. Expert Systems with Applications, 36(2), 3302-3308. https://doi.org/10.1016/j.eswa.2008.01.005
+Bellotti, T., & Crook, J. (2009). Support vector machines for credit scoring and discovery of significant features. *Expert Systems with Applications, 36*(2), 3302–3308. https://doi.org/10.1016/j.eswa.2008.01.005  
+Este artículo explora el uso de máquinas de soporte vectorial (SVM) para scoring crediticio y análisis de variables relevantes. Es útil como punto de comparación frente al modelo de red neuronal implementado en este trabajo.
 
-Chollet, F. (2021). Deep learning with Python (2nd ed.). Manning Publications.
+Brownlee, J. (2019). *Data Cleaning for Machine Learning: Handling Missing Data, Outliers, and Categorical Data*. Machine Learning Mastery. https://machinelearningmastery.com/data-preparation-without-data-leakage/  
+Manual práctico que describe estrategias fundamentales para el manejo de valores nulos, outliers y variables categóricas. Justifica las decisiones tomadas durante la limpieza del dataset original y el preprocesamiento de variables con alta proporción de valores perdidos o alta cardinalidad.
 
-Géron, A. (2022). Hands-on machine learning with Scikit-Learn, Keras, and TensorFlow (3rd ed.). O'Reilly Media.
+Chollet, F. (2021). *Deep Learning with Python* (2nd ed.). Manning Publications.  
+Este libro proporciona la base conceptual y práctica para el diseño, entrenamiento y evaluación de modelos de redes neuronales utilizando Keras. Fue utilizado como guía principal para la construcción y ajuste del modelo final.
 
-Lessmann, S., Baesens, B., Seow, H. V., & Thomas, L. C. (2015). Benchmarking state-of-the-art classification algorithms for credit scoring: An update of research. European Journal of Operational Research, 247(1), 124-136. https://doi.org/10.1016/j.ejor.2015.05.030
+Géron, A. (2022). *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow* (3rd ed.). O’Reilly Media.  
+Texto integral sobre todo el pipeline de machine learning moderno, incluyendo preprocesamiento, modelado y explicación de modelos. Sirvió de referencia para la selección de técnicas de escalado, validación cruzada y evaluación del modelo.
 
-Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. Advances in Neural Information Processing Systems, 30, 4765-4774.
+He, H., & Garcia, E. A. (2009). Learning from imbalanced data. *IEEE Transactions on Knowledge and Data Engineering, 21*(9), 1263–1284. https://doi.org/10.1109/TKDE.2008.239  
+Artículo clave sobre cómo abordar conjuntos de datos desbalanceados, mediante técnicas como el muestreo, pesos de clase y métricas especializadas. Sustenta el tratamiento aplicado al desbalance de clases en la variable objetivo (`loan_status_bin`).
 
-West, D. (2000). Neural network credit scoring models. Computers & Operations Research, 27(11-12), 1131-1152. https://doi.org/10.1016/S0305-0548(99)00149-5
+James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). *An Introduction to Statistical Learning: With Applications in R*. Springer. https://www.statlearning.com/  
+Este libro clásico presenta conceptos fundamentales de estadística y aprendizaje supervisado. Justifica el uso de técnicas como MinMaxScaler para variables con distribución normal y RobustScaler para variables sesgadas con outliers.
+
+Kaufman, S., Rosset, S., Perlich, C., & Stitelman, O. (2012). Leakage in data mining: Formulation, detection, and avoidance. *ACM Transactions on Knowledge Discovery from Data (TKDD), 6*(4), 1–21. https://doi.org/10.1145/2382577.2382579  
+Este artículo define el fenómeno de *data leakage* y ofrece una metodología para su detección y prevención. Justifica la exclusión de variables que contienen información no disponible al momento de decisión, como `total_pymnt` o `last_pymnt_d`.
+
+Lessmann, S., Baesens, B., Seow, H. V., & Thomas, L. C. (2015). Benchmarking state-of-the-art classification algorithms for credit scoring: An update of research. *European Journal of Operational Research, 247*(1), 124–136. https://doi.org/10.1016/j.ejor.2015.05.030  
+Comparación extensa entre algoritmos de clasificación aplicados al riesgo crediticio. Brinda una base para validar la elección de redes neuronales como método competitivo frente a modelos tradicionales como árboles o regresión logística.
+
+Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. *Advances in Neural Information Processing Systems, 30*, 4765–4774.  
+Presenta SHAP, una técnica de interpretación unificada y teóricamente sólida para modelos complejos. Respalda el análisis interpretativo del modelo final, especialmente en lo relacionado con la explicación de decisiones individuales.
+
+West, D. (2000). Neural network credit scoring models. *Computers & Operations Research, 27*(11–12), 1131–1152. https://doi.org/10.1016/S0305-0548(99)00149-5  
+Estudio pionero sobre el uso de redes neuronales en credit scoring. Ofrece un marco comparativo con estudios clásicos y justifica el enfoque metodológico elegido para modelar el riesgo crediticio.
 
 # Anexos
 
