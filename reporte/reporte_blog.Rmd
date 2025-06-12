@@ -821,18 +821,14 @@ A partir del gráfico podemos concluir:
 En conjunto, estos factores permiten comprender mejor qué tipo de perfil representa mayor riesgo y son fundamentales para la construcción de **políticas de crédito más robustas y personalizadas**.
 
 # 8. Aplicación Web
-
 ## 8.1 Diseño de la aplicación
-
-*[Diseño y arquitectura de la app web]*
+La aplicación web fue desarrollada en Streamlit con una arquitectura monolítica modular que separa la interfaz de usuario y la lógica del modelo predictivo. La interfaz es sencilla, interactiva y estéticamente personalizada mediante CSS embebido, lo que facilita su uso incluso para personas sin conocimientos técnicos. La lógica de predicción está encapsulada en un módulo externo, permitiendo mantener un diseño limpio y escalable. Aunque la app no implementa una arquitectura cliente-servidor compleja, su estructura modular permite futuras extensiones, como conexión a APIs o bases de datos. Es ideal para prototipos rápidos y demostraciones académicas en ciencia de datos y modelos de riesgo.
 
 ## 8.2 Funcionalidades
-
-*[Descripción de las funcionalidades implementadas]*
+La aplicación implementa una calculadora interactiva de score crediticio basada en modelos de machine learning. Permite al usuario ingresar variables financieras clave como monto del préstamo, tasa de interés, cuota mensual, ingreso anual y relación deuda/ingreso (DTI). Al hacer clic en el botón "Calcular score", se genera una predicción utilizando un modelo previamente entrenado, retornando el score crediticio estimado y la probabilidad de incumplimiento. La interfaz presenta estos resultados de forma visual mediante métricas destacadas. Adicionalmente, se utilizan valores por defecto para otras variables necesarias para la predicción, lo que simplifica la interacción sin comprometer la precisión del modelo.
 
 ## 8.3 Implementación
-
-*[Detalles técnicos de la implementación]*
+La aplicación fue desarrollada en Python 3.x utilizando el framework Streamlit como interfaz web. Se configura la página con st.set_page_config y se personaliza la interfaz mediante estilos CSS embebidos, que permiten modificar la apariencia de botones, métricas y fondos. Los datos del usuario se capturan con componentes como st.number_input y st.slider, y luego se combinan en un diccionario junto con variables predefinidas requeridas por el modelo. Este diccionario es enviado a la función predecir_score_crediticio, ubicada en el módulo src/model.py, donde se ejecuta la predicción. Los resultados se muestran de forma dinámica con st.metric y st.write. La estructura modular del proyecto permite mantener una separación clara entre la lógica de negocio y la interfaz, facilitando futuras mejoras o integraciones.
 
 # 9. Caso de Uso
 
@@ -863,23 +859,28 @@ Solución Implementada: Nuestro modelo actúa como filtro inteligente en dos eta
 Ejemplo Real:  
 
 ```{r}
+
 tabla_ejemplo_scorecard <- data.frame(
-  `Caso` = c("Startup Tech", "Freelancer"),
-  `Variables Clave` = c("`annual_inc`=$95k, `dti`=18%, `revol_util`=25%", 
-                        "`annual_inc`=$32k, `dti`=43%, `inq_last_6mths`=5"),
-  `Score` = c(790, 410),
-  `Decisión` = c("Aprobado ($50k)", "Rechazado")
+  `Caso` = c("Bajo Riesgo", "Riesgo Moderado", "Alto Riesgo"),
+  `Variables Clave` = c(
+    "`loan_amnt` = $30,000, `int_rate` = 7.5%, `annual_inc` = $120,000, `dti` = 15.8%, `revol_util` = 18.2%",
+    "`loan_amnt` = $18,000, `int_rate` = 12.8%, `annual_inc` = $75,000, `dti` = 22.1%, `revol_util` = 35.0%",
+    "`loan_amnt` = $40,000, `int_rate` = 22.0%, `annual_inc` = $45,000, `dti` = 38.7%, `revol_util` = 90.1%"
+  ),
+  `Score` = c(780, 531, 305),
+  `Clasificación` = c("Bajo Riesgo", "Riesgo Moderado", "Alto Riesgo"),
+  `Prob. Default` = c("12.68%", "57.94%", "99.17%")
 )
 
 kable(tabla_ejemplo_scorecard,
-  caption = "Tabla 5. Ejemplo real de aplicación de un scorecard crediticio",
+  caption = "Tabla 5. Casos reales clasificados por el scorecard crediticio",
   format = "html"
 ) %>%
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) %>%
-  column_spec(1:4, width = "5cm") %>%
+  column_spec(1:5, width = "4.2cm") %>%
   row_spec(0, bold = TRUE, color = "black", background = "lightgray")
+
 ```
-*(Por poner un ejemplo, después se puede hacer uno con la página)*
 
 ## 9.2 Beneficios del modelo
 
