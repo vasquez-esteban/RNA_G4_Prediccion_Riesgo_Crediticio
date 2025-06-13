@@ -100,8 +100,11 @@ if st.button("Calcular score"):
         "emp_length_Unknown": 0,
         "home_ownership_MORTGAGE": 1,
     }
-
     resultado = predecir_score_crediticio(entrada)
 
     st.metric(f":blue[🎯 Score Crediticio]", resultado["score_crediticio"])
     st.write(f"💥 Probabilidad de incumplimiento: **{resultado['prob_default']:.2%}**")
+
+st.header("Enlaces", divider="gray")
+st.write("[Video publicitario](https://www.youtube.com/)")
+st.write("[Reporte técnico](https://rpubs.com/evasp/rna-g4-datos-tabulares)")
