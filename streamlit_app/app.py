@@ -109,10 +109,10 @@ if st.button("Calcular score"):
     st.metric(f":blue[🎯 Score Crediticio]", resultado["score_crediticio"])
     st.write(f"💥 Probabilidad de incumplimiento: **{resultado['prob_default']:.2%}**")
 
-    # 🔗 Enlaces adicionales
-    st.markdown("---")
-    st.markdown("### 📎 Recursos Relacionados")
-    st.markdown(
-        "- 📘 [Análisis completo en RPubs](https://rpubs.com/evasp/rna-g4-datos-tabulares)"
-    )
-    st.markdown("- ▶️ [Video explicativo en YouTube](https://www.youtube.com)")
+# 🔗 Enlaces adicionales
+st.markdown("---")
+st.markdown("### 📎 Recursos Relacionados")
+st.markdown(
+    "- 📘 [Análisis completo en RPubs](https://rpubs.com/evasp/rna-g4-datos-tabulares)"
+)
+st.markdown("- ▶️ [Video explicativo en YouTube](https://www.youtube.com)")
