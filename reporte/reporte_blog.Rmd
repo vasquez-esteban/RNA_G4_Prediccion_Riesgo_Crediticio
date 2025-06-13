@@ -1018,7 +1018,7 @@ Anexo B: Gráficas Adicionales
 
 Anexo C: Recursos Adicionales
 
-- Video explicativo del modelo. (Espacio reservado para enlace)
+- Video explicativo del modelo. https://youtu.be/rXl06CvuGu4
 
 - Sitio web interactivo con el scorecard. https://rna-g4-prediccion-riesgo-crediticio.streamlit.app/
 
