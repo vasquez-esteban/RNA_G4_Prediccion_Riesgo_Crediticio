@@ -1,13 +1,15 @@
 import os
 import sys
-import streamlit as st
-import pandas as pd
 
-# ✅ Configuración de la página (debe ir antes de cualquier otro comando de Streamlit)
+import pandas as pd
+import streamlit as st
+
+# ✅ Configuración de la página
 st.set_page_config(page_title="Predicción de Riesgo Crediticio", layout="centered")
 
 # 🎨 Estilos personalizados
-st.markdown("""
+st.markdown(
+    """
     <style>
     .stApp {
         background: linear-gradient(135deg, #cceeff, #d1f7e3);
@@ -54,13 +56,14 @@ st.markdown("""
         margin-top: 20px;
         color: #1a1a1a;
     }
-    
-    div[data-testid="stMetricValue"] {
-    color: rgb(0, 0, 0);
-    }
 
+    div[data-testid="stMetricValue"] {
+        color: rgb(0, 0, 0);
+    }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # 📂 Hacer visible el módulo src
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -96,7 +99,7 @@ if st.button("Calcular score"):
         "total_rev_hi_lim": 20000,
         "issue_month": 6,
         "has_coll_amt": 0,
-        "term_ 60 months": 0,  # ⚠️ con espacio por compatibilidad con el modelo
+        "term_ 60 months": 0,  # ⚠️ espacio intencional
         "emp_length_Unknown": 0,
         "home_ownership_MORTGAGE": 1,
     }
@@ -105,3 +108,11 @@ if st.button("Calcular score"):
 
     st.metric(f":blue[🎯 Score Crediticio]", resultado["score_crediticio"])
     st.write(f"💥 Probabilidad de incumplimiento: **{resultado['prob_default']:.2%}**")
+
+    # 🔗 Enlaces adicionales
+    st.markdown("---")
+    st.markdown("### 📎 Recursos Relacionados")
+    st.markdown(
+        "- 📘 [Análisis completo en RPubs](https://rpubs.com/evasp/rna-g4-datos-tabulares)"
+    )
+    st.markdown("- ▶️ [Video explicativo en YouTube](https://www.youtube.com)")

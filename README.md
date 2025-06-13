@@ -91,7 +91,7 @@ El reporte incluye el análisis exploratorio, justificación del modelo, métric
 ## Publicaciones
 
 - Reporte en RPubs: [Reporte](https://rpubs.com/evasp/rna-g4-datos-tabulares)
-- App en Streamlit: [App Web](Link)
+- App en Streamlit: [App Web](https://rna-g4-prediccion-riesgo-crediticio.streamlit.app/)
 
 ---
 

@@ -1020,7 +1020,7 @@ Anexo C: Recursos Adicionales
 
 - Video explicativo del modelo. (Espacio reservado para enlace)
 
-- Sitio web interactivo con el scorecard. (Espacio reservado para enlace)
+- Sitio web interactivo con el scorecard. https://rna-g4-prediccion-riesgo-crediticio.streamlit.app/
 
 Anexo D: Diccionario de Datos
 
